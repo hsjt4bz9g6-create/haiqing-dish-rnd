@@ -118,3 +118,17 @@ class FeishuPushOutput(BaseModel):
     """飞书推送节点输出"""
     push_status: str = Field(..., description="推送状态：成功/失败")
     push_message: str = Field(..., description="推送结果消息")
+
+
+class FeishuBitableInput(BaseModel):
+    """飞书多维表格录入节点输入"""
+    product_name: str = Field(default="", description="产品名称")
+    product_type: str = Field(default="", description="产品类型")
+    processing_method: str = Field(default="", description="加工方式")
+    target_market: str = Field(default="", description="目标市场")
+    market_trends: str = Field(default="", description="市场趋势分析")
+    competitor_analysis: str = Field(default="", description="竞品分析")
+    product_suggestions: str = Field(default="", description="产品研发建议")
+    dish_applications: str = Field(default="", description="菜品应用方案")
+    content_drafts: str = Field(default="", description="社媒内容草稿")
+    final_report: str = Field(default="", description="最终报告")
