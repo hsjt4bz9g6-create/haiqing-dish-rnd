@@ -162,3 +162,20 @@ class WeeklyReportOutput(BaseModel):
     in_progress_count: int = Field(default=0, description="进行中任务数")
     next_week_count: int = Field(default=0, description="下周计划任务数")
     push_success: bool = Field(default=False, description="是否成功推送到飞书群")
+
+
+class SocialMediaTrackInput(BaseModel):
+    """社交媒体内容跟踪节点输入"""
+    app_token: str = Field(default="TA64bckK3aMMbzssfFncLvu4n2e", description="飞书多维表格app_token")
+    table_id: str = Field(default="tblCEdIkjthfJ7Of", description="社媒内容表table_id")
+
+
+class SocialMediaTrackOutput(BaseModel):
+    """社交媒体内容跟踪节点输出"""
+    success: bool = Field(..., description="是否成功抓取内容")
+    message: str = Field(..., description="执行结果消息")
+    total_records: int = Field(default=0, description="总记录数")
+    track_time: str = Field(default="", description="抓取时间")
+    total_exposure: int = Field(default=0, description="总曝光量")
+    total_likes: int = Field(default=0, description="总点赞量")
+    total_shares: int = Field(default=0, description="总转发量")

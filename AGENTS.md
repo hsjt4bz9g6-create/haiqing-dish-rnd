@@ -14,6 +14,7 @@
 | feishu_bitable_input | `nodes/feishu_bitable_input_node.py` | task | 飞书多维表格录入 | - | - |
 | social_media_crawl | `nodes/social_media_crawl_node.py` | task | 社媒爆款内容抓取 | - | - |
 | weekly_report | `nodes/weekly_report_node.py` | task | 研发任务周报生成 | - | - |
+| social_media_track | `nodes/social_media_track_node.py` | task | 社交媒体内容跟踪 | - | - |
 
 **类型说明**: task(task节点) / agent(大模型) / condition(条件分支) / looparray(列表循环) / loopcond(条件循环)
 
@@ -116,6 +117,7 @@ os.environ["FEISHU_APP_TOKEN"] = "your_app_token_here"
 - 节点 `feishu_bitable_input` 使用技能：飞书多维表格
 - 节点 `social_media_crawl` 使用技能：飞书多维表格、飞书消息
 - 节点 `weekly_report` 使用技能：飞书多维表格、飞书消息、文档生成
+- 节点 `social_media_track` 使用技能：飞书多维表格、飞书消息、网络搜索、大语言模型
 
 ## 研发任务周报功能
 
@@ -154,6 +156,50 @@ print(f"PDF链接: {result.pdf_url}")
 - **格式**: PDF文档
 - **内容**: Markdown转PDF，包含图表和表格
 - **推送**: 自动推送到飞书群
+
+## 社交媒体内容跟踪功能
+
+### 功能说明
+自动跟踪抖音、视频号、小红书账号的内容发布情况，每周六上午12点自动抓取并生成报告。
+
+### 配置信息
+- **飞书多维表格**: `TA64bckK3aMMbzssfFncLvu4n2e`
+- **内容跟踪表ID**: `tblCEdIkjthfJ7Of`
+- **定时任务**: 每周六上午12点自动执行
+
+### 账号信息
+- **抖音**: 老板雇我来摸鱼 (ID: 59001212261)
+- **视频号**: 老板雇我来摸鱼 (ID: sphUjxyLbdBmKJk)
+- **小红书**: 老板雇我来摸鱼 (ID: 27777474334)
+
+### 数据字段
+- 社媒渠道
+- 社媒分享标题
+- 社媒分享链接
+- 曝光量
+- 点赞量
+- 转发量
+- AI分析视频可以优化的方向及建议
+
+### 手动触发方式
+```python
+from graphs.nodes.social_media_track_node import social_media_track_node
+from graphs.state import SocialMediaTrackInput
+
+# 准备输入
+input_data = SocialMediaTrackInput()
+
+# 执行节点
+result = social_media_track_node(input_data, RunnableConfig(), Runtime[Context]())
+print(f"抓取记录: {result.total_records} 条")
+```
+
+### AI优化建议
+每条内容都会经过AI分析，提供：
+- 标题优化建议
+- 内容改进方向
+- 互动提升策略
+- 发布时间优化建议
 
 ## 业务场景
 本工作流专为大连海青水产设计，覆盖三个核心业务方向：
