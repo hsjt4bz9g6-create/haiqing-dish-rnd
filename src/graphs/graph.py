@@ -16,7 +16,7 @@ from graphs.nodes.product_rnd_node import product_rnd_node
 from graphs.nodes.dish_application_node import dish_application_node
 from graphs.nodes.content_creation_node import content_creation_node
 from graphs.nodes.report_generation_node import report_generation_node
-from graphs.nodes.feishu_push_node import feishu_push_node
+from graphs.nodes.feishu_bitable_input_node import feishu_bitable_input_node
 
 
 # 创建状态图
@@ -58,8 +58,8 @@ builder.add_node(
 )
 
 builder.add_node(
-    "feishu_push", 
-    feishu_push_node
+    "feishu_bitable_input", 
+    feishu_bitable_input_node
 )
 
 # 设置入口点
@@ -75,11 +75,11 @@ builder.add_edge(["product_rnd", "dish_application"], "content_creation")
 # 内容创作后生成报告
 builder.add_edge("content_creation", "report_generation")
 
-# 报告生成后推送到飞书
-builder.add_edge("report_generation", "feishu_push")
+# 报告生成后录入飞书多维表格
+builder.add_edge("report_generation", "feishu_bitable_input")
 
-# 飞书推送后结束
-builder.add_edge("feishu_push", END)
+# 飞书多维表格录入后结束
+builder.add_edge("feishu_bitable_input", END)
 
 # 编译图
 main_graph = builder.compile()
