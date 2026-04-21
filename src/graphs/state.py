@@ -145,3 +145,20 @@ class SocialMediaCrawlOutput(BaseModel):
     total_records: int = Field(..., description="抓取的总记录数")
     crawl_time: str = Field(..., description="抓取时间")
     message: str = Field(..., description="执行结果消息")
+
+
+class WeeklyReportInput(BaseModel):
+    """研发任务周报生成节点输入"""
+    app_token: str = Field(default="XqpUbfoHIa4LjcsgS3Ccr1uJnjg", description="飞书多维表格app_token")
+    table_id: str = Field(default="tblXZEsOcRXTT6Hp", description="任务表table_id")
+
+
+class WeeklyReportOutput(BaseModel):
+    """研发任务周报生成节点输出"""
+    success: bool = Field(..., description="是否成功生成周报")
+    message: str = Field(..., description="执行结果消息")
+    pdf_url: str = Field(default="", description="生成的PDF下载链接")
+    completed_count: int = Field(default=0, description="本周完成任务数")
+    in_progress_count: int = Field(default=0, description="进行中任务数")
+    next_week_count: int = Field(default=0, description="下周计划任务数")
+    push_success: bool = Field(default=False, description="是否成功推送到飞书群")

@@ -12,6 +12,8 @@
 | content_creation | `nodes/content_creation_node.py` | agent | 社媒内容创作、文案撰写 | - | `config/content_creation_cfg.json` |
 | report_generation | `nodes/report_generation_node.py` | agent | 报告整合生成 | - | `config/report_generation_cfg.json` |
 | feishu_bitable_input | `nodes/feishu_bitable_input_node.py` | task | 飞书多维表格录入 | - | - |
+| social_media_crawl | `nodes/social_media_crawl_node.py` | task | 社媒爆款内容抓取 | - | - |
+| weekly_report | `nodes/weekly_report_node.py` | task | 研发任务周报生成 | - | - |
 
 **类型说明**: task(task节点) / agent(大模型) / condition(条件分支) / looparray(列表循环) / loopcond(条件循环)
 
@@ -112,6 +114,46 @@ os.environ["FEISHU_APP_TOKEN"] = "your_app_token_here"
 - 节点 `content_creation` 使用技能：大语言模型
 - 节点 `report_generation` 使用技能：大语言模型
 - 节点 `feishu_bitable_input` 使用技能：飞书多维表格
+- 节点 `social_media_crawl` 使用技能：飞书多维表格、飞书消息
+- 节点 `weekly_report` 使用技能：飞书多维表格、飞书消息、文档生成
+
+## 研发任务周报功能
+
+### 功能说明
+每周自动生成研发任务周报PDF，汇报给老板，内容包括：
+- 本周完成任务总结
+- 进行中任务进展
+- 下周工作计划
+- 工作要点与建议
+
+### 配置信息
+- **飞书多维表格**: `XqpUbfoHIa4LjcsgS3Ccr1uJnjg`
+- **任务表ID**: `tblXZEsOcRXTT6Hp`
+- **定时任务**: 每周日上午12点自动生成
+
+### 手动触发方式
+```python
+from graphs.nodes.weekly_report_node import weekly_report_node
+from graphs.state import WeeklyReportInput
+from langchain_core.runnables import RunnableConfig
+from langgraph.runtime import Runtime
+from coze_coding_utils.runtime_ctx.context import Context
+
+# 准备输入
+input_data = WeeklyReportInput(
+    app_token="XqpUbfoHIa4LjcsgS3Ccr1uJnjg",
+    table_id="tblXZEsOcRXTT6Hp"
+)
+
+# 执行节点
+result = weekly_report_node(input_data, RunnableConfig(), Runtime[Context]())
+print(f"PDF链接: {result.pdf_url}")
+```
+
+### 输出格式
+- **格式**: PDF文档
+- **内容**: Markdown转PDF，包含图表和表格
+- **推送**: 自动推送到飞书群
 
 ## 业务场景
 本工作流专为大连海青水产设计，覆盖三个核心业务方向：
