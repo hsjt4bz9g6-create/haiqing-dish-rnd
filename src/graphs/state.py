@@ -132,3 +132,16 @@ class FeishuBitableInput(BaseModel):
     dish_applications: str = Field(default="", description="菜品应用方案")
     content_drafts: str = Field(default="", description="社媒内容草稿")
     final_report: str = Field(default="", description="最终报告")
+
+
+class SocialMediaCrawlInput(BaseModel):
+    """社媒内容抓取节点输入"""
+    keywords: list = Field(default=["鳕鱼", "三文鱼", "深海鱼", "虾", "鱼糜制品", "蟹柳棒"], description="搜索关键词列表")
+    channels: list = Field(default=["小红书", "抖音", "视频号", "快手", "公众号"], description="社媒渠道列表")
+
+
+class SocialMediaCrawlOutput(BaseModel):
+    """社媒内容抓取节点输出"""
+    total_records: int = Field(..., description="抓取的总记录数")
+    crawl_time: str = Field(..., description="抓取时间")
+    message: str = Field(..., description="执行结果消息")
