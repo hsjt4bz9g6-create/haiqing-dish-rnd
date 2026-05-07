@@ -324,4 +324,34 @@ Content-Type: application/json
 - **Web应用**: `src/web_app.py`
 - **静态文件**: `src/static/`
 - **模板文件**: `src/templates/`
+- **独立HTML**: `assets/dish-rnd-workbench.html`（可在本地浏览器打开）
+
+### 访问说明
+
+由于沙箱环境的认证限制，Web应用目前无法直接通过浏览器访问。您可以：
+
+1. **下载独立HTML文件**：`assets/dish-rnd-workbench.html`
+   - 可以在本地浏览器中直接打开
+   - 包含演示数据和完整UI设计
+   - 展示了社媒洞察和菜品研发两个核心功能
+
+2. **联系技术团队**：获取完整API访问权限
+
+### 演示效果
+
+独立HTML文件展示了：
+- ✅ 海青水产官网设计风格（深海蓝主色调）
+- ✅ 左右分栏布局（社媒洞察 + 菜品研发）
+- ✅ 大众点评和小红书洞察展示
+- ✅ 菜品信息输入表单
+- ✅ AI生成结果展示（图片 + 卖点）
+
+### 后端API说明
+
+Web应用提供以下API端点（需要认证）：
+
+1. **GET /** - Web应用主页
+2. **GET /api/insights/dianping** - 获取大众点评洞察
+3. **GET /api/insights/xiaohongshu** - 获取小红书洞察
+4. **POST /api/dish/generate** - 生成菜品图片和卖点
 - 修改 `src/tools/feishu_bitable_tool.py` 可调整多维表格操作逻辑

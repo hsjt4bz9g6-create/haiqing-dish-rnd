@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜品应用研发工作台 - 大连海青水产</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 51, 102, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header h1 {
+            color: #003366;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            color: #00509e;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #003366, #00509e);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 51, 102, 0.1);
+        }
+        
+        .card h2 {
+            color: #003366;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #00509e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2::before {
+            content: '';
+            width: 4px;
+            height: 22px;
+            background: #003366;
+            border-radius: 2px;
+        }
+        
+        .insights-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: #003366;
+            color: white;
+        }
+        
+        .tab-btn:hover {
+            background: #00509e;
+            color: white;
+        }
+        
+        .insights-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .insight-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #003366;
+            transition: all 0.3s;
+        }
+        
+        .insight-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(0, 51, 102, 0.1);
+        }
+        
+        .insight-item h3 {
+            color: #003366;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .insight-item p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .insight-item a {
+            color: #00509e;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .insight-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #003366;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #003366;
+            box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #003366, #00509e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .result-section h3 {
+            color: #003366;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .dish-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.1);
+        }
+        
+        .selling-points {
+            list-style: none;
+        }
+        
+        .selling-points li {
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            color: #333;
+            border-left: 3px solid #003366;
+        }
+        
+        .selling-points li::before {
+            content: '✓';
+            color: #003366;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        .notice {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">海</div>
+            <div>
+                <h1>菜品应用研发工作台</h1>
+                <div class="subtitle">大连海青水产有限公司 - 专业深海鱼研发平台</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <h2>社媒洞察</h2>
+            
+            <div class="notice">
+                <strong>使用说明：</strong>此页面为演示版本。完整功能需要后端API支持。您可以：
+                <ol style="margin-top: 10px; padding-left: 20px;">
+                    <li>查看设计效果和界面布局</li>
+                    <li>联系技术团队获取完整访问权限</li>
+                </ol>
+            </div>
+            
+            <div class="insights-tabs">
+                <button class="tab-btn active" onclick="showTab('dianping')">
+                    大众点评
+                </button>
+                <button class="tab-btn" onclick="showTab('xiaohongshu')">
+                    小红书
+                </button>
+            </div>
+            
+            <div class="insights-list" id="insightsList">
+                <div class="insight-item">
+                    <h3>香煎鳕鱼配柠檬黄油酱</h3>
+                    <p>外酥里嫩，柠檬清香，适合家庭快手菜。主料：鳕鱼200g，辅料：柠檬、黄油</p>
+                    <a href="#" onclick="return false;">来源：大众点评 →</a>
+                </div>
+                <div class="insight-item">
+                    <h3>蒜蓉粉丝蒸鳕鱼</h3>
+                    <p>鲜嫩多汁，蒜香浓郁，营养健康。适合老人和儿童食用</p>
+                    <a href="#" onclick="return false;">来源：大众点评 →</a>
+                </div>
+                <div class="insight-item">
+                    <h3>照烧鳕鱼便当</h3>
+                    <p>甜咸适中，方便携带，适合上班族。搭配蔬菜营养均衡</p>
+                    <a href="#" onclick="return false;">来源：大众点评 →</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>菜品研发</h2>
+            
+            <div class="form-group">
+                <label>菜品名称</label>
+                <input type="text" id="dishName" placeholder="例如：香煎鳕鱼配柠檬黄油酱" value="香煎鳕鱼配柠檬黄油酱">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>主料名称</label>
+                    <input type="text" id="mainIngredient" placeholder="例如：鳕鱼" value="鳕鱼">
+                </div>
+                <div class="form-group">
+                    <label>主料克重</label>
+                    <input type="text" id="mainWeight" placeholder="例如：200g" value="200g">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>辅料名称</label>
+                    <input type="text" id="auxIngredient" placeholder="例如：柠檬、黄油" value="柠檬、黄油">
+                </div>
+                <div class="form-group">
+                    <label>辅料克重</label>
+                    <input type="text" id="auxWeight" placeholder="例如：50g" value="50g">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>烹饪方法</label>
+                <textarea id="cookingMethod" rows="4" placeholder="详细描述烹饪步骤和方法...">1. 鳕鱼解冻后用厨房纸吸干水分
+2. 表面撒少许盐和黑胡椒腌制10分钟
+3. 平底锅热油，中小火煎至两面金黄
+4. 加入黄油融化后，挤入柠檬汁
+5. 起锅装盘，淋上柠檬黄油酱即可</textarea>
+            </div>
+            
+            <button class="btn-primary" onclick="showDemo()">
+                查看生成效果演示
+            </button>
+            
+            <div class="result-section" id="resultSection" style="display: none;">
+                <h3>生成结果（演示）</h3>
+                <img id="dishImage" class="dish-image" src="https://via.placeholder.com/800x400/003366/FFFFFF?text=AI%E7%94%9F%E6%88%90%E8%8F%9C%E5%93%81%E5%9B%BE%E7%89%87" alt="菜品图片">
+                <h4 style="color: #003366; margin-bottom: 15px;">菜品卖点</h4>
+                <ul class="selling-points" id="sellingPoints">
+                    <li>外酥里嫩：鳕鱼肉质细腻，煎制后外皮酥脆，内里鲜嫩</li>
+                    <li>快手菜：10分钟内完成，适合忙碌的家庭主妇</li>
+                    <li>营养健康：富含优质蛋白质，低脂肪，适合健身人群</li>
+                    <li>儿童友好：柠檬清香去腥，儿童爱吃的口味</li>
+                    <li>商务宴请：摆盘精美，适合商务聚餐场合</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const list = document.getElementById('insightsList');
+            if (type === 'dianping') {
+                list.innerHTML = `
+                    <div class="insight-item">
+                        <h3>香煎鳕鱼配柠檬黄油酱</h3>
+                        <p>外酥里嫩，柠檬清香，适合家庭快手菜</p>
+                        <a href="#" onclick="return false;">来源：大众点评 →</a>
+                    </div>
+                    <div class="insight-item">
+                        <h3>蒜蓉粉丝蒸鳕鱼</h3>
+                        <p>鲜嫩多汁，蒜香浓郁，营养健康</p>
+                        <a href="#" onclick="return false;">来源：大众点评 →</a>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = `
+                    <div class="insight-item">
+                        <h3>家庭版鳕鱼汉堡</h3>
+                        <p>小朋友最爱，健康又美味，快手早餐首选</p>
+                        <a href="#" onclick="return false;">来源：小红书 →</a>
+                    </div>
+                    <div class="insight-item">
+                        <h3>鳕鱼粥</h3>
+                        <p>婴儿辅食，营养丰富，易于消化</p>
+                        <a href="#" onclick="return false;">来源：小红书 →</a>
+                    </div>
+                `;
+            }
+        }
+        
+        function showDemo() {
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
