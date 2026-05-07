@@ -5,7 +5,7 @@ import threading
 import traceback
 import logging
 import os
-from typing import Any, Dict, Iterable, AsyncIterable, AsyncGenerator, Optional
+from typing import Any, Dict, Iterable, AsyncIterable, AsyncGenerator, Optional, List
 import cozeloop
 import uvicorn
 import time

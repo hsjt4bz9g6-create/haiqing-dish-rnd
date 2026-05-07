@@ -239,6 +239,51 @@
             cursor: not-allowed;
         }
 
+        /* 辅料动态行样式 */
+        .ingredient-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .side-ingredient-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .remove-btn {
+            padding: 10px 15px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: #cc0000;
+        }
+
+        .add-btn {
+            padding: 8px 15px;
+            background: #00509e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #003366;
+        }
+
         .result-card {
             background: #f8f9fa;
             border-radius: 10px;
@@ -445,7 +490,13 @@
 
                 <div class="form-group">
                     <label>辅料及克重</label>
-                    <input type="text" id="side-ingredient" placeholder="例如：黄油 20g、柠檬 1个">
+                    <div id="side-ingredients-list">
+                        <div class="ingredient-row">
+                            <input type="text" class="side-ingredient-input" placeholder="例如：黄油 20g">
+                            <button type="button" class="remove-btn" onclick="removeIngredient(this)">✕</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addIngredient()">+ 添加辅料</button>
                 </div>
 
                 <div class="form-group">
@@ -520,7 +571,16 @@
 
             const dishName = document.getElementById('dish-name').value;
             const mainIngredient = document.getElementById('main-ingredient').value;
-            const sideIngredient = document.getElementById('side-ingredient').value;
+            
+            // 收集所有辅料
+            const sideIngredients = [];
+            document.querySelectorAll('.side-ingredient-input').forEach(input => {
+                if (input.value.trim()) {
+                    sideIngredients.push(input.value.trim());
+                }
+            });
+            const sideIngredient = sideIngredients.join('、');
+            
             const cookingMethod = document.getElementById('cooking-method').value;
 
             const errorMsg = document.getElementById('error-msg');
@@ -581,6 +641,30 @@
         window.addEventListener('load', () => {
             refreshInsights();
         });
+
+        // 添加辅料行
+        function addIngredient() {
+            const list = document.getElementById('side-ingredients-list');
+            const newRow = document.createElement('div');
+            newRow.className = 'ingredient-row';
+            newRow.innerHTML = `
+                <input type="text" class="side-ingredient-input" placeholder="例如：柠檬 1个">
+                <button type="button" class="remove-btn" onclick="removeIngredient(this)">✕</button>
+            `;
+            list.appendChild(newRow);
+        }
+
+        // 删除辅料行
+        function removeIngredient(btn) {
+            const list = document.getElementById('side-ingredients-list');
+            const rows = list.querySelectorAll('.ingredient-row');
+            // 至少保留一行
+            if (rows.length > 1) {
+                btn.parentElement.remove();
+            } else {
+                alert('至少需要保留一行辅料输入框');
+            }
+        }
     </script>
 </body>
 </html>
