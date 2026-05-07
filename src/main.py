@@ -12,6 +12,7 @@ import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
@@ -243,6 +244,15 @@ class GraphService:
 service = GraphService()
 app = FastAPI()
 
+# 添加CORS支持，允许Web前端跨域访问
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有来源
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有方法
+    allow_headers=["*"],  # 允许所有头部
+)
+
 # OpenAI 兼容接口处理器
 openai_handler = OpenAIChatHandler(service)
 
@@ -269,7 +279,12 @@ class GenerateDishRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def web_index():
     """菜品应用研发工作台主页"""
-    return get_web_html()
+    try:
+        with open("src/templates/dish-rnd-web.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        logger.error(f"读取Web页面失败: {e}")
+        return "<h1>页面加载失败</h1><p>请刷新重试</p>"
 
 
 # 社媒洞察API
@@ -494,6 +509,84 @@ async def generate_dish(request: GenerateDishRequest):
     
     except Exception as e:
         logger.error(f"生成菜品失败: {e}")
+        return {"success": False, "error": str(e)}
+
+
+# ========== Web前端专用API ==========
+
+@app.get("/api/web/insights/{platform}")
+async def web_get_insights(platform: str):
+    """Web前端专用：获取社媒洞察（简化版）"""
+    try:
+        # 调用已有的洞察API
+        if platform == "dianping":
+            result = await get_dianping_insights()
+        elif platform == "xiaohongshu":
+            result = await get_xiaohongshu_insights()
+        else:
+            return {"success": False, "error": "不支持的平台"}
+        
+        # 简化返回格式
+        insights = []
+        data = result.get("data", [])
+        
+        # data可能是列表或字典
+        if isinstance(data, list):
+            items = data
+        elif isinstance(data, dict):
+            items = data.get("results", [])
+        else:
+            items = []
+        
+        for item in items:
+            if isinstance(item, dict):
+                insights.append({
+                    "keyword": item.get("title", "")[:30] or item.get("keyword", ""),
+                    "description": item.get("summary", "")[:100] or item.get("description", ""),
+                    "image_url": item.get("image_url", ""),
+                    "source": item.get("source", ""),
+                    "url": item.get("url", "")
+                })
+        
+        return {"success": True, "insights": insights}
+    
+    except Exception as e:
+        logger.error(f"获取Web洞察失败: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/web/dish/generate")
+async def web_generate_dish(request: dict):
+    """Web前端专用：生成菜品图片和卖点（简化版）"""
+    try:
+        # 构造请求
+        dish_request = GenerateDishRequest(
+            dish_info=DishInfo(
+                name=request.get("dish_name", ""),
+                main_ingredient=request.get("main_ingredient", "").split()[0] if request.get("main_ingredient") else "",
+                main_ingredient_weight=request.get("main_ingredient", "").split()[1] if len(request.get("main_ingredient", "").split()) > 1 else "",
+                auxiliary_ingredient=request.get("side_ingredient", "").split()[0] if request.get("side_ingredient") else "",
+                auxiliary_ingredient_weight=request.get("side_ingredient", "").split()[1] if len(request.get("side_ingredient", "").split()) > 1 else "",
+                cooking_method=request.get("cooking_method", "")
+            )
+        )
+        
+        # 调用已有的生成API
+        result = await generate_dish(dish_request)
+        
+        # 简化返回格式
+        if result.get("success"):
+            data = result.get("data", {})
+            return {
+                "success": True,
+                "image_url": data.get("image_url", ""),
+                "selling_points": data.get("selling_points", [])
+            }
+        else:
+            return result
+    
+    except Exception as e:
+        logger.error(f"Web生成菜品失败: {e}")
         return {"success": False, "error": str(e)}
 
 
