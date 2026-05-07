@@ -352,9 +352,64 @@
 </head>
 <body>
     <div class="header">
-        <h1>🐟 菜品应用研发工作台</h1>
-        <p>大连海青水产有限公司 | 深海鱼加工及相关预制菜品研发</p>
+        <div class="header-content">
+            <div class="header-left">
+                <h1>🐟 菜品应用研发工作台</h1>
+                <p>大连海青水产有限公司 | 深海鱼加工及相关预制菜品研发</p>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">菜品研发</a>
+                <a href="/product" class="nav-link">产品研发</a>
+            </div>
+        </div>
     </div>
+    
+    <style>
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header-left h1 {
+            color: #003366;
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .header-left p {
+            color: #00509e;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-link {
+            padding: 10px 25px;
+            background: rgba(0, 51, 102, 0.1);
+            color: #003366;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(0, 51, 102, 0.2);
+        }
+        
+        .nav-link.active {
+            background: #003366;
+            color: white;
+        }
+    </style>
 
     <div class="container">
         <!-- 左侧：社媒洞察 -->

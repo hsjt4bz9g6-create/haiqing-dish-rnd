@@ -590,6 +590,107 @@ async def web_generate_dish(request: dict):
         return {"success": False, "error": str(e)}
 
 
+# 产品研发页面
+@app.get("/product", response_class=HTMLResponse)
+async def product_development_page():
+    """产品研发分析页面"""
+    try:
+        with open("src/templates/product-development.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        logger.error(f"读取产品研发页面失败: {e}")
+        return "<h1>页面加载失败</h1><p>请刷新重试</p>"
+
+
+# 产品研发分析API
+from fastapi import UploadFile, File, Form
+import json as json_module
+
+
+@app.post("/api/web/product/analyze")
+async def web_analyze_product(
+    recipe_name: str = Form(...),
+    cooking_method: str = Form(...),
+    lab_data: str = Form(default=""),
+    ingredients: str = Form(default="[]"),
+    document: Optional[UploadFile] = File(default=None),
+    photos: List[UploadFile] = File(default=[])
+):
+    """Web前端专用：产品研发分析"""
+    try:
+        from graphs.nodes.product_development_node import product_development_node
+        from graphs.state import ProductDevelopmentInput, IngredientItem
+        
+        # 解析配料列表
+        ingredients_list = []
+        try:
+            ingredients_data = json_module.loads(ingredients)
+            for item in ingredients_data:
+                ingredients_list.append(IngredientItem(
+                    name=item.get("name", ""),
+                    amount=item.get("amount", "")
+                ))
+        except:
+            pass
+        
+        # 处理文档内容
+        document_content = ""
+        if document:
+            try:
+                # 读取文档内容（简化处理，实际需要文档解析）
+                doc_bytes = await document.read()
+                document_content = f"文档名称: {document.filename}, 大小: {len(doc_bytes)} bytes"
+            except:
+                pass
+        
+        # 处理产品照片
+        photo_urls = []
+        if photos and photos[0].filename:
+            for photo in photos[:5]:  # 最多5张
+                try:
+                    photo_bytes = await photo.read()
+                    # 上传到对象存储（这里简化处理）
+                    photo_urls.append(f"照片: {photo.filename}")
+                except:
+                    pass
+        
+        # 调用产品研发节点
+        state = ProductDevelopmentInput(
+            recipe_name=recipe_name,
+            ingredients=ingredients_list,
+            lab_data=lab_data,
+            cooking_method=cooking_method,
+            document_content=document_content,
+            photo_urls=photo_urls
+        )
+        
+        # 创建runtime和config
+        ctx = new_context(method="product.development")
+        runtime = Runtime(context=ctx)
+        config = RunnableConfig()
+        
+        # 执行分析
+        result = product_development_node(state, config, runtime)
+        
+        # 返回结果
+        return {
+            "success": True,
+            "recipe_name": result.recipe_name,
+            "improvements": [
+                {
+                    "point": item.point,
+                    "reason": item.reason
+                }
+                for item in result.improvements
+            ],
+            "summary": result.summary
+        }
+    
+    except Exception as e:
+        logger.error(f"产品研发分析失败: {e}")
+        return {"success": False, "error": str(e)}
+
+
 def get_web_html() -> str:
     """返回Web应用HTML"""
     return """

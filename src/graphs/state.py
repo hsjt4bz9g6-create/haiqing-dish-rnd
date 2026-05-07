@@ -245,3 +245,35 @@ class SocialMediaTrackOutput(BaseModel):
     total_exposure: int = Field(default=0, description="总曝光量")
     total_likes: int = Field(default=0, description="总点赞量")
     total_shares: int = Field(default=0, description="总转发量")
+
+
+# ========== 产品研发分析状态定义 ==========
+
+class IngredientItem(BaseModel):
+    """配料项"""
+    name: str = Field(..., description="配料名称")
+    amount: str = Field(..., description="用量")
+
+
+class ImprovementItem(BaseModel):
+    """改进项"""
+    point: str = Field(..., description="改进点")
+    reason: str = Field(..., description="改进原因")
+
+
+class ProductDevelopmentInput(BaseModel):
+    """产品研发分析节点输入"""
+    recipe_name: str = Field(..., description="配方名称")
+    ingredients: List[IngredientItem] = Field(default=[], description="配料列表")
+    lab_data: str = Field(default="", description="实验室数据")
+    cooking_method: str = Field(..., description="烹饪方式")
+    document_content: str = Field(default="", description="工艺文档内容")
+    photo_urls: List[str] = Field(default=[], description="产品照片URL列表")
+
+
+class ProductDevelopmentOutput(BaseModel):
+    """产品研发分析节点输出"""
+    recipe_name: str = Field(..., description="配方名称")
+    improvements: List[ImprovementItem] = Field(default=[], description="改进点列表")
+    summary: str = Field(..., description="优化建议总结")
+

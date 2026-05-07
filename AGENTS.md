@@ -233,11 +233,14 @@ print(f"抓取记录: {result.total_records} 条")
 2. 部署前端到Vercel：`vercel-frontend/` 目录
 3. 详细部署文档：`DEPLOYMENT.md`
 
-**本地开发访问**：http://localhost:5000
+**本地开发访问**：
+- 菜品研发页面：http://localhost:5000/
+- 产品研发页面：http://localhost:5000/product
 
 **功能特点**：
 - ✅ 社媒洞察：抓取大众点评和小红书深海鱼菜品（含图片）
 - ✅ AI菜品研发：输入菜品信息，自动生成图片和卖点
+- ✅ 产品研发分析：上传工艺文档和实验室数据，AI分析配方改进点
 - ✅ 海青风格：符合大连海青水产官网设计风格
 - ✅ 实时数据：使用真实API，无需模拟数据
 - ✅ 可以联网：真实调用网络搜索和AI生成API
@@ -248,10 +251,16 @@ print(f"抓取记录: {result.total_records} 条")
 - 所有研发人员通过公网地址访问
 - 实时协作，数据共享
 
+**页面说明**：
+- **菜品研发页面**（/）：社媒洞察 + AI菜品研发
+- **产品研发页面**（/product）：配方分析 + 改进建议
+
 **API端点**：
-- `GET /` - Web主页
+- `GET /` - 菜品研发主页
+- `GET /product` - 产品研发页面
 - `GET /api/web/insights/{platform}` - 社媒洞察（dianping/xiaohongshu）
 - `POST /api/web/dish/generate` - 生成菜品图片和卖点
+- `POST /api/web/product/analyze` - 产品研发分析
 
 ---
 
