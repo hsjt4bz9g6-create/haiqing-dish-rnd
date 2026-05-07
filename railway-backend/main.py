@@ -7,9 +7,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
-from coze_coding_dev_sdk.search import SyncSearchClient
-from coze_coding_dev_sdk.llm import LLMClient
-from coze_coding_dev_sdk.image_generation import ImageGenerationClient
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -26,11 +23,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# 初始化客户端
-search_client = SyncSearchClient()
-llm_client = LLMClient(model_id="doubao-seed-1-8-251228")
-image_client = ImageGenerationClient()
 
 
 class InsightItem(BaseModel):
@@ -60,10 +52,44 @@ class DishGenerateResponse(BaseModel):
     selling_points: List[str]
 
 
+def get_search_client():
+    """延迟初始化搜索客户端"""
+    try:
+        from coze_coding_dev_sdk.search import SyncSearchClient
+        return SyncSearchClient()
+    except Exception as e:
+        logger.error(f"初始化搜索客户端失败: {e}")
+        return None
+
+
+def get_llm_client():
+    """延迟初始化LLM客户端"""
+    try:
+        from coze_coding_dev_sdk.llm import LLMClient
+        return LLMClient(model_id="doubao-seed-1-8-251228")
+    except Exception as e:
+        logger.error(f"初始化LLM客户端失败: {e}")
+        return None
+
+
+def get_image_client():
+    """延迟初始化图片生成客户端"""
+    try:
+        from coze_coding_dev_sdk.image_generation import ImageGenerationClient
+        return ImageGenerationClient()
+    except Exception as e:
+        logger.error(f"初始化图片生成客户端失败: {e}")
+        return None
+
+
 @app.get("/api/web/insights/{platform}")
 async def get_insights(platform: str):
     """获取社媒洞察"""
     try:
+        search_client = get_search_client()
+        if not search_client:
+            return InsightResponse(platform=platform, insights=[])
+        
         # 搜索关键词
         if platform == "dianping":
             query = "大众点评 深海鱼 鳕鱼 三文鱼 蟹柳 菜品"
@@ -100,6 +126,12 @@ async def get_insights(platform: str):
 async def generate_dish(request: DishGenerateRequest):
     """生成菜品图片和卖点"""
     try:
+        image_client = get_image_client()
+        llm_client = get_llm_client()
+        
+        if not image_client or not llm_client:
+            raise Exception("客户端初始化失败，请检查环境变量配置")
+        
         # 生成图片
         prompt = f"精美的{request.dish_name}菜品，{request.main_ingredient}，{request.cooking_method}，专业美食摄影，高清，诱人"
         image_result = image_client.generate_image(prompt=prompt)
@@ -133,6 +165,12 @@ async def generate_dish(request: DishGenerateRequest):
 @app.get("/")
 async def root():
     return {"message": "海青菜品研发API运行中"}
+
+
+@app.get("/health")
+async def health():
+    """健康检查"""
+    return {"status": "healthy", "service": "haiqing-dish-rnd-backend"}
 
 
 if __name__ == "__main__":
