@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜品应用研发工作台 - 大连海青水产</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #003366;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #00509e;
+        }
+        
+        .platform-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .platform-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #003366;
+            background: white;
+            color: #003366;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .platform-btn.active {
+            background: #003366;
+            color: white;
+        }
+        
+        .platform-btn:hover {
+            background: #00509e;
+            color: white;
+        }
+        
+        .insight-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .insight-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .insight-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .insight-image {
+            width: 120px;
+            height: 90px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #ddd;
+        }
+        
+        .insight-content {
+            flex: 1;
+        }
+        
+        .insight-keyword {
+            font-size: 18px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 8px;
+        }
+        
+        .insight-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        
+        .insight-link {
+            font-size: 12px;
+            color: #00509e;
+            text-decoration: none;
+        }
+        
+        .insight-link:hover {
+            text-decoration: underline;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,51,102,0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #003366;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00509e;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .result-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #f5f5f5;
+        }
+        
+        .selling-points {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .selling-point {
+            padding: 12px 15px;
+            background: #f0f7ff;
+            border-left: 4px solid #003366;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .note {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐟 菜品应用研发工作台</h1>
+        <p>大连海青水产有限公司 | 深海鱼加工及相关预制菜品研发</p>
+    </div>
+    
+    <div class="container">
+        <!-- 社媒洞察区 -->
+        <div class="card">
+            <h2>📊 社媒洞察</h2>
+            
+            <div class="platform-tabs">
+                <button class="platform-btn active" onclick="switchPlatform('dianping')">大众点评</button>
+                <button class="platform-btn" onclick="switchPlatform('xiaohongshu')">小红书</button>
+            </div>
+            
+            <button class="btn" onclick="refreshInsights()" id="refreshBtn">
+                <span>🔄</span> 刷新数据
+            </button>
+            
+            <div id="insightList" class="insight-list" style="margin-top: 20px;">
+                <div class="loading">点击"刷新数据"获取最新菜品趋势</div>
+            </div>
+        </div>
+        
+        <!-- 菜品研发区 -->
+        <div class="card">
+            <h2>🍳 菜品研发</h2>
+            
+            <div class="form-group">
+                <label>菜品名称</label>
+                <input type="text" id="dishName" placeholder="例如：香煎鳕鱼">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>主料</label>
+                    <input type="text" id="mainIngredient" placeholder="例如：鳕鱼">
+                </div>
+                <div class="form-group">
+                    <label>克重</label>
+                    <input type="text" id="mainWeight" placeholder="例如：200g">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>辅料</label>
+                    <input type="text" id="sideIngredient" placeholder="例如：黄油">
+                </div>
+                <div class="form-group">
+                    <label>克重</label>
+                    <input type="text" id="sideWeight" placeholder="例如：20g">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>烹饪方法</label>
+                <textarea id="cookingMethod" rows="3" placeholder="例如：鳕鱼解冻，放入锅内香煎至两面金黄"></textarea>
+            </div>
+            
+            <button class="btn" onclick="generateDish()" id="generateBtn">
+                <span>✨</span> 生成菜品图片和卖点
+            </button>
+            
+            <div id="resultArea"></div>
+            
+            <div class="note">
+                <strong>💡 提示：</strong>AI生成图片和卖点约需10-15秒，请耐心等待
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API基础地址（部署时需要修改）
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : 'YOUR_RAILWAY_BACKEND_URL'; // 部署时替换为Railway后端地址
+        
+        let currentPlatform = 'dianping';
+        
+        // 切换平台
+        function switchPlatform(platform) {
+            currentPlatform = platform;
+            document.querySelectorAll('.platform-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // 刷新洞察数据
+        async function refreshInsights() {
+            const btn = document.getElementById('refreshBtn');
+            const listDiv = document.getElementById('insightList');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> 加载中...';
+            listDiv.innerHTML = '<div class="loading">正在获取数据...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/web/insights/${currentPlatform}`);
+                const data = await response.json();
+                
+                if (data.insights && data.insights.length > 0) {
+                    listDiv.innerHTML = data.insights.map(item => `
+                        <div class="insight-item">
+                            <img class="insight-image" src="${item.image_url || 'https://via.placeholder.com/120x90?text=菜品图片'}" 
+                                 onerror="this.src='https://via.placeholder.com/120x90?text=菜品图片'">
+                            <div class="insight-content">
+                                <div class="insight-keyword">${item.keyword}</div>
+                                <div class="insight-desc">${item.description}</div>
+                                <a class="insight-link" href="${item.source_url}" target="_blank">查看原文 →</a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    listDiv.innerHTML = '<div class="loading">暂无数据，请稍后重试</div>';
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<div class="error">获取数据失败: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄</span> 刷新数据';
+            }
+        }
+        
+        // 生成菜品图片和卖点
+        async function generateDish() {
+            const btn = document.getElementById('generateBtn');
+            const resultDiv = document.getElementById('resultArea');
+            
+            const dishName = document.getElementById('dishName').value.trim();
+            const mainIngredient = document.getElementById('mainIngredient').value.trim();
+            const mainWeight = document.getElementById('mainWeight').value.trim();
+            const sideIngredient = document.getElementById('sideIngredient').value.trim();
+            const sideWeight = document.getElementById('sideWeight').value.trim();
+            const cookingMethod = document.getElementById('cookingMethod').value.trim();
+            
+            if (!dishName || !mainIngredient || !cookingMethod) {
+                resultDiv.innerHTML = '<div class="error">请填写菜品名称、主料和烹饪方法</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> AI生成中...';
+            resultDiv.innerHTML = '<div class="loading">AI正在生成菜品图片和卖点，请稍候...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/web/dish/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        dish_name: dishName,
+                        main_ingredient: mainIngredient,
+                        main_weight: mainWeight,
+                        side_ingredient: sideIngredient,
+                        side_weight: sideWeight,
+                        cooking_method: cookingMethod
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.image_url && data.selling_points) {
+                    resultDiv.innerHTML = `
+                        <img class="result-image" src="${data.image_url}" alt="${dishName}">
+                        <h3 style="color: #003366; margin-bottom: 15px;">核心卖点</h3>
+                        <div class="selling-points">
+                            ${data.selling_points.map(point => `
+                                <div class="selling-point">${point}</div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">生成失败，请重试</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">生成失败: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>✨</span> 生成菜品图片和卖点';
+            }
+        }
+    </script>
+</body>
+</html>

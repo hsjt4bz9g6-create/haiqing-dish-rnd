@@ -223,7 +223,17 @@ print(f"抓取记录: {result.total_records} 条")
 
 ### 🌐 Web应用访问（推荐）
 
-**本地访问**：http://localhost:5000
+**在线访问（Vercel + Railway部署）**：
+- 前端：部署到Vercel（免费）
+- 后端：部署到Railway（免费）
+- 完全免费的公网访问方案
+
+**部署步骤**：
+1. 部署后端到Railway：`railway-backend/` 目录
+2. 部署前端到Vercel：`vercel-frontend/` 目录
+3. 详细部署文档：`DEPLOYMENT.md`
+
+**本地开发访问**：http://localhost:5000
 
 **功能特点**：
 - ✅ 社媒洞察：抓取大众点评和小红书深海鱼菜品（含图片）
@@ -231,22 +241,16 @@ print(f"抓取记录: {result.total_records} 条")
 - ✅ 海青风格：符合大连海青水产官网设计风格
 - ✅ 实时数据：使用真实API，无需模拟数据
 - ✅ 可以联网：真实调用网络搜索和AI生成API
+- ✅ 公网访问：部署后所有研发人员都可以访问
 
 **使用场景**：
-- 适合部署在公司内网服务器
-- 所有研发人员都可以通过浏览器访问
+- 部署到Vercel + Railway（完全免费）
+- 所有研发人员通过公网地址访问
 - 实时协作，数据共享
-
-**部署说明**：
-1. 将代码部署到公司服务器
-2. 启动服务：`python src/main.py -m http -p 5000`
-3. 访问地址：`http://服务器IP:5000`
-4. 所有研发人员都可以访问
 
 **API端点**：
 - `GET /` - Web主页
-- `GET /api/web/insights/dianping` - 大众点评洞察
-- `GET /api/web/insights/xiaohongshu` - 小红书洞察
+- `GET /api/web/insights/{platform}` - 社媒洞察（dianping/xiaohongshu）
 - `POST /api/web/dish/generate` - 生成菜品图片和卖点
 
 ---

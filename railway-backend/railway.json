@@ -1,0 +1,14 @@
+[project]
+name = "haiqing-dish-rnd-backend"
+version = "1.0.0"
+description = "大连海青水产菜品研发API"
+requires-python = ">=3.10"
+
+[build]
+builder = "python"
+
+[deploy]
+startCommand = "python main.py"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
