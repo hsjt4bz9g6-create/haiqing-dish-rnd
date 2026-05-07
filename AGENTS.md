@@ -221,6 +221,25 @@ print(f"抓取记录: {result.total_records} 条")
 
 ## 使用方法
 
+### Web应用访问
+**菜品应用研发工作台（推荐）**
+
+访问链接（30天有效）：
+```
+https://coze-coding-project.tos.coze.site/coze_storage_7631102360177344563/web-apps/dish-rnd-workbench-v2_43dcd109.html?sign=1780713278-3179b2e199-0-2f1b44bf3347dcf93f31607fccdebcf44e78756ad854cff75f0ff3ccbacd7c72
+```
+
+功能特点：
+- ✅ **社媒洞察**：抓取大众点评和小红书深海鱼菜品（含图片）
+- ✅ **AI菜品研发**：输入菜品信息，自动生成图片和卖点
+- ✅ **海青风格**：符合大连海青水产官网设计风格
+- ✅ **实时数据**：使用真实API，无需模拟数据
+
+### API端点
+- `GET /api/insights/dianping` - 获取大众点评洞察（含图片）
+- `GET /api/insights/xiaohongshu` - 获取小红书洞察（含图片）
+- `POST /api/dish/generate` - 生成菜品图片和卖点
+
 ### 测试运行
 ```python
 import os

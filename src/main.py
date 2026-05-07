@@ -275,11 +275,12 @@ async def web_index():
 # 社媒洞察API
 @app.get("/api/insights/dianping")
 async def get_dianping_insights(keyword: Optional[str] = "深海鱼 鳕鱼"):
-    """获取大众点评餐饮洞察"""
+    """获取大众点评餐饮洞察（包含菜品图片）"""
     try:
         ctx = new_context(method="search.web")
         client = SearchClient(ctx=ctx)
         
+        # 1. 搜索网页内容
         response = client.search(
             query=f"{keyword} 菜品 做法",
             sites="dianping.com",
@@ -287,14 +288,41 @@ async def get_dianping_insights(keyword: Optional[str] = "深海鱼 鳕鱼"):
             need_summary=True
         )
         
+        # 2. 搜索图片
+        img_ctx = new_context(method="search.image")
+        img_client = SearchClient(ctx=img_ctx)
+        img_response = img_client.image_search(
+            query=f"{keyword} 菜品 美食",
+            count=10
+        )
+        
+        # 3. 构建图片URL映射
+        image_map = {}
+        if img_response.image_items:
+            for img_item in img_response.image_items:
+                if img_item.image and img_item.image.url:
+                    image_map[img_item.title] = img_item.image.url
+        
         insights = []
         if response.web_items:
             for item in response.web_items:
+                # 查找匹配的图片
+                image_url = ""
+                for img_title, img_url in image_map.items():
+                    if item.title and any(word in img_title for word in item.title.split()[:3]):
+                        image_url = img_url
+                        break
+                
+                # 如果没找到匹配的，使用第一张图片
+                if not image_url and img_response.image_items:
+                    image_url = img_response.image_items[0].image.url if img_response.image_items[0].image else ""
+                
                 insights.append({
                     "keyword": item.title[:50] if item.title else "",
                     "description": item.snippet[:100] if item.snippet else "",
                     "source": item.site_name or "大众点评",
-                    "url": item.url
+                    "url": item.url,
+                    "image_url": image_url
                 })
         
         return {"success": True, "data": insights}
@@ -306,11 +334,12 @@ async def get_dianping_insights(keyword: Optional[str] = "深海鱼 鳕鱼"):
 
 @app.get("/api/insights/xiaohongshu")
 async def get_xiaohongshu_insights(keyword: Optional[str] = "家庭深海鱼"):
-    """获取小红书家庭深海鱼洞察"""
+    """获取小红书家庭深海鱼洞察（包含菜品图片）"""
     try:
         ctx = new_context(method="search.web")
         client = SearchClient(ctx=ctx)
         
+        # 1. 搜索网页内容
         response = client.search(
             query=f"{keyword} 菜谱 教程",
             sites="xiaohongshu.com",
@@ -318,14 +347,41 @@ async def get_xiaohongshu_insights(keyword: Optional[str] = "家庭深海鱼"):
             need_summary=True
         )
         
+        # 2. 搜索图片
+        img_ctx = new_context(method="search.image")
+        img_client = SearchClient(ctx=img_ctx)
+        img_response = img_client.image_search(
+            query=f"{keyword} 菜品 家常菜",
+            count=10
+        )
+        
+        # 3. 构建图片URL映射
+        image_map = {}
+        if img_response.image_items:
+            for img_item in img_response.image_items:
+                if img_item.image and img_item.image.url:
+                    image_map[img_item.title] = img_item.image.url
+        
         insights = []
         if response.web_items:
             for item in response.web_items:
+                # 查找匹配的图片
+                image_url = ""
+                for img_title, img_url in image_map.items():
+                    if item.title and any(word in img_title for word in item.title.split()[:3]):
+                        image_url = img_url
+                        break
+                
+                # 如果没找到匹配的，使用第一张图片
+                if not image_url and img_response.image_items:
+                    image_url = img_response.image_items[0].image.url if img_response.image_items[0].image else ""
+                
                 insights.append({
                     "keyword": item.title[:50] if item.title else "",
                     "description": item.snippet[:100] if item.snippet else "",
                     "source": item.site_name or "小红书",
-                    "url": item.url
+                    "url": item.url,
+                    "image_url": image_url
                 })
         
         return {"success": True, "data": insights}

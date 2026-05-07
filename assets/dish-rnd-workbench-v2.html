@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜品应用研发工作台 - 大连海青水产</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 51, 102, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header h1 {
+            color: #003366;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 51, 102, 0.15);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            color: white;
+            padding: 20px 25px;
+        }
+        
+        .card-header h2 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .card-header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* 社媒洞察样式 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #003366;
+            background: white;
+            color: #003366;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: #003366;
+            color: white;
+        }
+        
+        .tab-btn:hover {
+            background: #00509e;
+            color: white;
+        }
+        
+        .refresh-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .insights-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .insight-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .insight-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(0, 51, 102, 0.1);
+        }
+        
+        .insight-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #e0e0e0;
+        }
+        
+        .insight-item h3 {
+            color: #003366;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .insight-item p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .insight-item a {
+            color: #00509e;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        .insight-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        /* 菜品研发样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #003366;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00509e;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .result-card.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-card h3 {
+            color: #003366;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #e0e0e0;
+        }
+        
+        .selling-points {
+            list-style: none;
+        }
+        
+        .selling-points li {
+            padding: 12px 15px;
+            background: white;
+            border-left: 4px solid #003366;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .selling-points li::before {
+            content: '✓ ';
+            color: #00509e;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .error-msg {
+            background: #fee;
+            border-left: 4px solid #f44;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #c33;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🐟 菜品应用研发工作台</h1>
+            <p class="subtitle">大连海青水产 · 社媒洞察 · AI菜品研发</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- 左侧：社媒洞察 -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 社媒洞察</h2>
+                <p>实时抓取大众点评和小红书深海鱼菜品趋势</p>
+            </div>
+            <div class="card-body">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('dianping')">大众点评</button>
+                    <button class="tab-btn" onclick="switchTab('xiaohongshu')">小红书</button>
+                </div>
+                
+                <button class="refresh-btn" onclick="refreshInsights()">
+                    🔄 刷新数据
+                </button>
+                
+                <div class="insights-list" id="insightsList">
+                    <div class="empty-state">
+                        <p>点击"刷新数据"获取最新洞察</p>
+                        <p style="font-size: 14px; color: #bbb;">支持大众点评和小红书平台</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：菜品研发 -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👨‍🍳 菜品研发</h2>
+                <p>AI生成菜品图片和卖点文案</p>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>菜品名称</label>
+                    <input type="text" id="dishName" placeholder="例如：香煎鳕鱼配柠檬黄油酱">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>主料</label>
+                        <input type="text" id="mainIngredient" placeholder="例如：鳕鱼">
+                    </div>
+                    <div class="form-group">
+                        <label>主料克重</label>
+                        <input type="text" id="mainWeight" placeholder="例如：200g">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>辅料</label>
+                        <input type="text" id="auxIngredient" placeholder="例如：柠檬、黄油">
+                    </div>
+                    <div class="form-group">
+                        <label>辅料克重</label>
+                        <input type="text" id="auxWeight" placeholder="例如：50g">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>烹饪方法</label>
+                    <textarea id="cookingMethod" rows="3" placeholder="例如：香煎，中火煎至两面金黄"></textarea>
+                </div>
+                
+                <button class="generate-btn" onclick="generateDish()">
+                    ✨ 生成菜品图片和卖点
+                </button>
+                
+                <div class="result-card" id="resultCard">
+                    <h3 id="resultTitle"></h3>
+                    <img id="resultImage" src="" alt="菜品图片">
+                    <ul class="selling-points" id="sellingPoints"></ul>
+                </div>
+                
+                <div class="error-msg" id="errorMsg" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentTab = 'dianping';
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            refreshInsights();
+        }
+        
+        async function refreshInsights() {
+            const list = document.getElementById('insightsList');
+            const btn = document.querySelector('.refresh-btn');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ 加载中...';
+            list.innerHTML = '<div class="loading">正在获取数据</div>';
+            
+            try {
+                const url = currentTab === 'dianping' 
+                    ? '/api/insights/dianping'
+                    : '/api/insights/xiaohongshu';
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    list.innerHTML = data.data.map(item => `
+                        <div class="insight-item">
+                            ${item.image_url ? `<img src="${item.image_url}" alt="${item.keyword}" onerror="this.style.display='none'">` : ''}
+                            <h3>${item.keyword}</h3>
+                            <p>${item.description}</p>
+                            ${item.url ? `<a href="${item.url}" target="_blank">查看原文 →</a>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="empty-state"><p>暂无数据</p></div>';
+                }
+            } catch (error) {
+                list.innerHTML = `<div class="error-msg">获取数据失败: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 刷新数据';
+            }
+        }
+        
+        async function generateDish() {
+            const dishName = document.getElementById('dishName').value.trim();
+            const mainIngredient = document.getElementById('mainIngredient').value.trim();
+            const mainWeight = document.getElementById('mainWeight').value.trim();
+            const auxIngredient = document.getElementById('auxIngredient').value.trim();
+            const auxWeight = document.getElementById('auxWeight').value.trim();
+            const cookingMethod = document.getElementById('cookingMethod').value.trim();
+            
+            const errorMsg = document.getElementById('errorMsg');
+            const resultCard = document.getElementById('resultCard');
+            const btn = document.querySelector('.generate-btn');
+            
+            errorMsg.style.display = 'none';
+            resultCard.classList.remove('show');
+            
+            if (!dishName || !mainIngredient || !cookingMethod) {
+                errorMsg.textContent = '请填写菜品名称、主料和烹饪方法';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ 生成中...';
+            
+            try {
+                const response = await fetch('/api/dish/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        dish_info: {
+                            name: dishName,
+                            main_ingredient: mainIngredient,
+                            main_ingredient_weight: mainWeight || '适量',
+                            auxiliary_ingredient: auxIngredient || '无',
+                            auxiliary_ingredient_weight: auxWeight || '适量',
+                            cooking_method: cookingMethod
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('resultTitle').textContent = data.data.dish_name;
+                    document.getElementById('resultImage').src = data.data.image_url;
+                    
+                    const pointsList = document.getElementById('sellingPoints');
+                    pointsList.innerHTML = data.data.selling_points.map(point => 
+                        `<li>${point}</li>`
+                    ).join('');
+                    
+                    resultCard.classList.add('show');
+                } else {
+                    errorMsg.textContent = '生成失败: ' + (data.error || '未知错误');
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.textContent = '生成失败: ' + error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ 生成菜品图片和卖点';
+            }
+        }
+        
+        // 页面加载时自动刷新
+        window.addEventListener('load', () => {
+            refreshInsights();
+        });
+    </script>
+</body>
+</html>
