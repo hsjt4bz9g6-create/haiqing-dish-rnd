@@ -257,4 +257,71 @@ print(result["final_report"])
 - 修改 `config/` 目录下的配置文件可调整大模型参数和提示词
 - 修改 `src/graphs/state.py` 可调整数据结构
 - 修改各节点文件可调整具体业务逻辑
+
+## 菜品应用研发工作台（Web应用）
+
+### 功能说明
+一个基于Web的菜品研发平台，帮助餐饮洞察和菜品研发团队：
+- **社媒洞察**: 抓取大众点评餐饮和小红书家庭深海鱼菜品，提炼关键词和简介
+- **菜品研发**: 输入菜品信息，AI自动生成菜品图片和卖点
+
+### 设计风格
+采用大连海青水产官网设计风格：
+- **主色调**: 深海蓝 (#003366)
+- **辅助色**: 浅蓝渐变 (#00509e)
+- **字体**: 微软雅黑、Arial（无衬线）
+- **元素**: 海洋主题、圆角卡片、蓝色渐变
+
+### 访问地址
+```
+http://localhost:8000
+```
+
+### 启动方式
+```bash
+cd src
+uvicorn web_app:app --host 0.0.0.0 --port 8000
+```
+
+### API接口
+
+#### 1. 获取大众点评洞察
+```
+GET /api/insights/dianping?keyword=深海鱼 鳕鱼
+```
+
+#### 2. 获取小红书洞察
+```
+GET /api/insights/xiaohongshu?keyword=家庭深海鱼
+```
+
+#### 3. 生成菜品图片和卖点
+```
+POST /api/dish/generate
+Content-Type: application/json
+
+{
+  "dish_info": {
+    "name": "香煎鳕鱼配柠檬黄油酱",
+    "main_ingredient": "鳕鱼",
+    "main_ingredient_weight": "200g",
+    "auxiliary_ingredient": "柠檬、黄油",
+    "auxiliary_ingredient_weight": "50g",
+    "cooking_method": "香煎"
+  }
+}
+```
+
+### 技术栈
+- **后端**: FastAPI + Uvicorn
+- **前端**: HTML5 + CSS3 + JavaScript
+- **AI能力**: 
+  - 网络搜索（SearchClient）
+  - 大语言模型（LLMClient）
+  - 图片生成（ImageGenerationClient）
+
+### 文件位置
+- **Web应用**: `src/web_app.py`
+- **静态文件**: `src/static/`
+- **模板文件**: `src/templates/`
 - 修改 `src/tools/feishu_bitable_tool.py` 可调整多维表格操作逻辑
