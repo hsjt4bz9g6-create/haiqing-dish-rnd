@@ -84,6 +84,7 @@ pygments==2.19.2
 pygobject==3.48.2
 pyiceberg==0.11.1
 pyjwt==2.11.0
+pyngrok==8.1.2
 pyparsing==3.3.2
 pypdf==6.7.5
 pyroaring==1.0.3

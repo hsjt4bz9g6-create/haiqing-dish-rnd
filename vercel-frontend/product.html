@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品研发 - 海青水产</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .nav-link.active {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .page-title {
+            text-align: center;
+            color: #003366;
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        
+        .page-subtitle {
+            text-align: center;
+            color: #00509e;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+        
+        /* 主布局 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        /* 卡片 */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            color: #003366;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00509e;
+        }
+        
+        /* 表单 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #003366;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #00509e;
+        }
+        
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* 文件上传 */
+        .file-upload {
+            border: 2px dashed #00509e;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fbff;
+        }
+        
+        .file-upload:hover {
+            background: #e8f2ff;
+            border-color: #003366;
+        }
+        
+        .file-upload-icon {
+            font-size: 48px;
+            color: #00509e;
+            margin-bottom: 10px;
+        }
+        
+        .file-upload-text {
+            color: #003366;
+            margin-bottom: 5px;
+        }
+        
+        .file-upload-hint {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            background: #f0f7ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-name {
+            color: #003366;
+            font-size: 14px;
+        }
+        
+        .file-remove {
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        /* 配料列表 */
+        .ingredient-list {
+            margin-top: 15px;
+        }
+        
+        .ingredient-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .ingredient-input {
+            flex: 1;
+        }
+        
+        .btn-add {
+            background: #00509e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-add:hover {
+            background: #003366;
+        }
+        
+        .btn-remove {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* 按钮 */
+        .btn-primary {
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,51,102,0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00509e;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 分析结果 */
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .result-card {
+            background: #f8fbff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00509e;
+        }
+        
+        .result-title {
+            color: #003366;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .improvement-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .improvement-point {
+            color: #00509e;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .improvement-reason {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* 图片预览 */
+        .image-preview {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        /* 错误提示 */
+        .error-message {
+            background: #fff0f0;
+            color: #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ff4444;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <div class="logo">🐟 海青水产 - 研发工作台</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">菜品研发</a>
+            <a href="/product" class="nav-link active">产品研发</a>
+        </div>
+    </div>
+    
+    <!-- 主容器 -->
+    <div class="container">
+        <h1 class="page-title">产品研发分析</h1>
+        <p class="page-subtitle">上传工艺文档和实验室数据，AI智能分析配方改进点</p>
+        
+        <div class="main-layout">
+            <!-- 左侧：输入区 -->
+            <div class="card">
+                <h2 class="card-title">📝 产品信息输入</h2>
+                
+                <!-- 配方名称 -->
+                <div class="form-group">
+                    <label class="form-label">配方名称 *</label>
+                    <input type="text" class="form-input" id="recipeName" placeholder="例如：深海鳕鱼调理制品配方">
+                </div>
+                
+                <!-- 工艺文档上传 -->
+                <div class="form-group">
+                    <label class="form-label">工艺文档（PDF/Word）</label>
+                    <div class="file-upload" id="docUpload">
+                        <div class="file-upload-icon">📄</div>
+                        <div class="file-upload-text">点击或拖拽上传工艺文档</div>
+                        <div class="file-upload-hint">支持 PDF、DOC、DOCX 格式</div>
+                        <input type="file" class="file-input" id="docFile" accept=".pdf,.doc,.docx">
+                    </div>
+                    <div class="file-list" id="docList"></div>
+                </div>
+                
+                <!-- 配料输入 -->
+                <div class="form-group">
+                    <label class="form-label">配料清单</label>
+                    <div class="ingredient-list" id="ingredientList">
+                        <div class="ingredient-item">
+                            <input type="text" class="form-input ingredient-input" placeholder="配料名称">
+                            <input type="text" class="form-input ingredient-input" placeholder="用量（如：100g）">
+                            <button class="btn-remove" onclick="removeIngredient(this)">✕</button>
+                        </div>
+                    </div>
+                    <button class="btn-add" onclick="addIngredient()">+ 添加配料</button>
+                </div>
+                
+                <!-- 实验室数据 -->
+                <div class="form-group">
+                    <label class="form-label">实验室数据</label>
+                    <textarea class="form-input" id="labData" placeholder="请输入实验室测试数据，例如：&#10;- 水分含量：75%&#10;- 蛋白质含量：18%&#10;- 口感评分：8.5/10&#10;- 货架期测试：30天"></textarea>
+                </div>
+                
+                <!-- 烹饪方式 -->
+                <div class="form-group">
+                    <label class="form-label">烹饪方式 *</label>
+                    <textarea class="form-input" id="cookingMethod" placeholder="请输入烹饪方式，例如：&#10;1. 解冻后直接煎制&#10;2. 油温180℃，煎制3-4分钟&#10;3. 表面金黄即可食用"></textarea>
+                </div>
+                
+                <!-- 产品照片 -->
+                <div class="form-group">
+                    <label class="form-label">产品照片</label>
+                    <div class="file-upload" id="photoUpload">
+                        <div class="file-upload-icon">📸</div>
+                        <div class="file-upload-text">点击或拖拽上传产品照片</div>
+                        <div class="file-upload-hint">支持 JPG、PNG 格式，最多5张</div>
+                        <input type="file" class="file-input" id="photoFile" accept="image/*" multiple>
+                    </div>
+                    <div class="image-preview" id="photoPreview"></div>
+                </div>
+            </div>
+            
+            <!-- 右侧：分析结果 -->
+            <div class="card">
+                <h2 class="card-title">🤖 AI分析结果</h2>
+                
+                <button class="btn-primary" id="analyzeBtn" onclick="analyzeRecipe()">
+                    开始分析配方改进点
+                </button>
+                
+                <!-- 加载动画 -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>AI正在分析配方，请稍候...</p>
+                </div>
+                
+                <!-- 分析结果 -->
+                <div class="result-section" id="resultSection">
+                    <div class="result-card">
+                        <h3 class="result-title">📊 配方改进建议</h3>
+                        <div id="improvements"></div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3 class="result-title">💡 优化建议总结</h3>
+                        <div id="summary"></div>
+                    </div>
+                </div>
+                
+                <!-- 错误提示 -->
+                <div class="error-message" id="errorMessage" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = window.location.origin;
+        
+        // 文档上传
+        const docUpload = document.getElementById('docUpload');
+        const docFile = document.getElementById('docFile');
+        const docList = document.getElementById('docList');
+        let uploadedDoc = null;
+        
+        docUpload.addEventListener('click', () => docFile.click());
+        docUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            docUpload.style.background = '#e8f2ff';
+        });
+        docUpload.addEventListener('dragleave', () => {
+            docUpload.style.background = '#f8fbff';
+        });
+        docUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            docUpload.style.background = '#f8fbff';
+            handleDocUpload(e.dataTransfer.files[0]);
+        });
+        docFile.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleDocUpload(e.target.files[0]);
+            }
+        });
+        
+        function handleDocUpload(file) {
+            uploadedDoc = file;
+            docList.innerHTML = `
+                <div class="file-item">
+                    <span class="file-name">📄 ${file.name}</span>
+                    <span class="file-remove" onclick="removeDoc()">✕</span>
+                </div>
+            `;
+        }
+        
+        function removeDoc() {
+            uploadedDoc = null;
+            docList.innerHTML = '';
+        }
+        
+        // 照片上传
+        const photoUpload = document.getElementById('photoUpload');
+        const photoFile = document.getElementById('photoFile');
+        const photoPreview = document.getElementById('photoPreview');
+        let uploadedPhotos = [];
+        
+        photoUpload.addEventListener('click', () => photoFile.click());
+        photoUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            photoUpload.style.background = '#e8f2ff';
+        });
+        photoUpload.addEventListener('dragleave', () => {
+            photoUpload.style.background = '#f8fbff';
+        });
+        photoUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            photoUpload.style.background = '#f8fbff';
+            handlePhotoUpload(e.dataTransfer.files);
+        });
+        photoFile.addEventListener('change', (e) => {
+            handlePhotoUpload(e.target.files);
+        });
+        
+        function handlePhotoUpload(files) {
+            const maxPhotos = 5;
+            const remaining = maxPhotos - uploadedPhotos.length;
+            const filesToAdd = Array.from(files).slice(0, remaining);
+            
+            filesToAdd.forEach(file => {
+                if (uploadedPhotos.length < maxPhotos) {
+                    uploadedPhotos.push(file);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const div = document.createElement('div');
+                        div.className = 'preview-item';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" alt="产品照片">
+                            <span class="preview-remove" onclick="removePhoto(${uploadedPhotos.length - 1}, this)">✕</span>
+                        `;
+                        photoPreview.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        function removePhoto(index, element) {
+            uploadedPhotos.splice(index, 1);
+            element.parentElement.remove();
+        }
+        
+        // 配料管理
+        function addIngredient() {
+            const list = document.getElementById('ingredientList');
+            const div = document.createElement('div');
+            div.className = 'ingredient-item';
+            div.innerHTML = `
+                <input type="text" class="form-input ingredient-input" placeholder="配料名称">
+                <input type="text" class="form-input ingredient-input" placeholder="用量（如：100g）">
+                <button class="btn-remove" onclick="removeIngredient(this)">✕</button>
+            `;
+            list.appendChild(div);
+        }
+        
+        function removeIngredient(btn) {
+            const items = document.querySelectorAll('.ingredient-item');
+            if (items.length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+        
+        // 分析配方
+        async function analyzeRecipe() {
+            const recipeName = document.getElementById('recipeName').value;
+            const cookingMethod = document.getElementById('cookingMethod').value;
+            const labData = document.getElementById('labData').value;
+            
+            // 验证必填字段
+            if (!recipeName || !cookingMethod) {
+                showError('请填写配方名称和烹饪方式');
+                return;
+            }
+            
+            // 收集配料
+            const ingredients = [];
+            document.querySelectorAll('.ingredient-item').forEach(item => {
+                const inputs = item.querySelectorAll('.ingredient-input');
+                if (inputs[0].value && inputs[1].value) {
+                    ingredients.push({
+                        name: inputs[0].value,
+                        amount: inputs[1].value
+                    });
+                }
+            });
+            
+            // 显示加载状态
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+            
+            try {
+                // 准备FormData
+                const formData = new FormData();
+                formData.append('recipe_name', recipeName);
+                formData.append('cooking_method', cookingMethod);
+                formData.append('lab_data', labData);
+                formData.append('ingredients', JSON.stringify(ingredients));
+                
+                if (uploadedDoc) {
+                    formData.append('document', uploadedDoc);
+                }
+                
+                uploadedPhotos.forEach((photo, index) => {
+                    formData.append('photos', photo);
+                });
+                
+                // 调用API
+                const response = await fetch(`${API_BASE_URL}/api/web/product/analyze`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('分析请求失败');
+                }
+                
+                const result = await response.json();
+                
+                // 显示结果
+                displayResults(result);
+                
+            } catch (error) {
+                showError('分析失败: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+        
+        function displayResults(result) {
+            const improvementsDiv = document.getElementById('improvements');
+            const summaryDiv = document.getElementById('summary');
+            
+            // 显示改进点
+            improvementsDiv.innerHTML = result.improvements.map((item, index) => `
+                <div class="improvement-item">
+                    <div class="improvement-point">${index + 1}. ${item.point}</div>
+                    <div class="improvement-reason"><strong>改进原因：</strong>${item.reason}</div>
+                </div>
+            `).join('');
+            
+            // 显示总结
+            summaryDiv.innerHTML = `
+                <div class="improvement-reason" style="line-height: 1.8;">${result.summary}</div>
+            `;
+            
+            document.getElementById('resultSection').style.display = 'block';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
