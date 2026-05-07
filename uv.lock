@@ -1937,6 +1937,18 @@ crypto = [
 ]
 
 [[package]]
+name = "pyngrok"
+version = "8.1.2"
+source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }
+dependencies = [
+    { name = "pyyaml" },
+]
+sdist = { url = "https://mirrors.aliyun.com/pypi/packages/8d/ae/6664934258773db4666e65730c43b4b06730f78d49861a9a04ebcf4742ff/pyngrok-8.1.2.tar.gz", hash = "sha256:3b5383ec7dc4646ac0d046435eb58c6cd1cbc9acad70e6dee012b05dc25b070a" }
+wheels = [
+    { url = "https://mirrors.aliyun.com/pypi/packages/07/5c/7733776a6a9704bffee19d203f9be80f25f78a5011a9863971be60fe2763/pyngrok-8.1.2-py3-none-any.whl", hash = "sha256:849e9f55706288b00eb28f4ae8ea16b05e52c609f80ef4a88ca23b385f2f9178" },
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.3.2"
 source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }
@@ -2697,6 +2709,7 @@ dependencies = [
     { name = "pycairo" },
     { name = "pydantic" },
     { name = "pygobject" },
+    { name = "pyngrok" },
     { name = "pypdf" },
     { name = "python-dotenv" },
     { name = "python-multipart" },
@@ -2737,6 +2750,7 @@ requires-dist = [
     { name = "pycairo", specifier = "==1.29.0" },
     { name = "pydantic", specifier = ">=2.12,<3" },
     { name = "pygobject", specifier = "==3.48.2" },
+    { name = "pyngrok", specifier = ">=8.1.2" },
     { name = "pypdf", specifier = ">=6.4,<7" },
     { name = "python-dotenv", specifier = ">=1.2,<2" },
     { name = "python-multipart", specifier = ">=0.0.27" },
