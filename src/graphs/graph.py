@@ -8,7 +8,11 @@ from langgraph.runtime import Runtime
 from graphs.state import (
     GlobalState,
     GraphInput,
-    GraphOutput
+    GraphOutput,
+    DishRnDGraphInput,
+    DishRnDGraphOutput,
+    SocialMediaInsightInput,
+    DishDevelopmentInput
 )
 
 from graphs.nodes.market_analysis_node import market_analysis_node
@@ -17,7 +21,11 @@ from graphs.nodes.dish_application_node import dish_application_node
 from graphs.nodes.content_creation_node import content_creation_node
 from graphs.nodes.report_generation_node import report_generation_node
 from graphs.nodes.feishu_bitable_input_node import feishu_bitable_input_node
+from graphs.nodes.social_media_insight_node import social_media_insight_node
+from graphs.nodes.dish_development_node import dish_development_node
 
+
+# ========== 原有工作流 ==========
 
 # 创建状态图
 builder = StateGraph(
@@ -83,3 +91,47 @@ builder.add_edge("feishu_bitable_input", END)
 
 # 编译图
 main_graph = builder.compile()
+
+
+# ========== 菜品研发工作流 ==========
+
+def dish_rnd_router(state: DishRnDGraphInput) -> str:
+    """
+    title: 路由节点
+    desc: 根据action决定执行哪个节点
+    """
+    if state.action == "社媒洞察":
+        return "social_media_insight"
+    elif state.action == "菜品研发":
+        return "dish_development"
+    else:
+        return "end"
+
+
+# 创建菜品研发状态图
+dish_rnd_builder = StateGraph(
+    DishRnDGraphInput,
+    input_schema=DishRnDGraphInput,
+    output_schema=DishRnDGraphOutput
+)
+
+# 添加节点
+dish_rnd_builder.add_node("social_media_insight", social_media_insight_node)
+dish_rnd_builder.add_node("dish_development", dish_development_node)
+
+# 设置条件分支
+dish_rnd_builder.set_conditional_entry_point(
+    dish_rnd_router,
+    {
+        "social_media_insight": "social_media_insight",
+        "dish_development": "dish_development",
+        "end": END
+    }
+)
+
+# 添加边
+dish_rnd_builder.add_edge("social_media_insight", END)
+dish_rnd_builder.add_edge("dish_development", END)
+
+# 编译菜品研发图
+dish_rnd_graph = dish_rnd_builder.compile()

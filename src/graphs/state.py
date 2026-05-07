@@ -147,6 +147,72 @@ class SocialMediaCrawlOutput(BaseModel):
     message: str = Field(..., description="执行结果消息")
 
 
+# ========== 菜品应用研发工作流状态定义 ==========
+
+class InsightItem(BaseModel):
+    """单个洞察项"""
+    keyword: str = Field(..., description="关键词/菜品名")
+    description: str = Field(..., description="简单介绍")
+    image_url: str = Field(default="", description="图片URL")
+    source: str = Field(default="", description="来源链接")
+    platform: str = Field(default="", description="平台：大众点评/小红书")
+
+
+class SocialMediaInsightInput(BaseModel):
+    """社媒洞察节点输入"""
+    platform: str = Field(default="小红书", description="平台：大众点评/小红书")
+    keywords: list = Field(default=["鳕鱼", "三文鱼", "蟹柳", "裹粉鳕鱼", "调理狭鳕鱼"], description="搜索关键词列表")
+    limit: int = Field(default=5, description="返回结果数量")
+
+
+class SocialMediaInsightOutput(BaseModel):
+    """社媒洞察节点输出"""
+    insights: List[InsightItem] = Field(default=[], description="洞察列表")
+    platform: str = Field(..., description="平台")
+    total: int = Field(..., description="总数")
+
+
+class DishDevelopmentInput(BaseModel):
+    """菜品研发节点输入"""
+    dish_name: str = Field(..., description="菜品名称")
+    main_ingredient: str = Field(default="", description="主料")
+    main_weight: str = Field(default="", description="主料克重")
+    side_ingredient: str = Field(default="", description="辅料")
+    side_weight: str = Field(default="", description="辅料克重")
+    cooking_method: str = Field(default="", description="烹饪方法")
+
+
+class DishDevelopmentOutput(BaseModel):
+    """菜品研发节点输出"""
+    dish_name: str = Field(..., description="菜品名称")
+    image_url: str = Field(..., description="生成的菜品图片URL")
+    selling_points: List[str] = Field(default=[], description="菜品卖点列表")
+
+
+class DishRnDGraphInput(BaseModel):
+    """菜品研发工作流输入"""
+    action: Literal["社媒洞察", "菜品研发"] = Field(..., description="操作类型")
+    # 社媒洞察参数
+    platform: str = Field(default="小红书", description="平台：大众点评/小红书")
+    # 菜品研发参数
+    dish_name: str = Field(default="", description="菜品名称")
+    main_ingredient: str = Field(default="", description="主料")
+    main_weight: str = Field(default="", description="主料克重")
+    side_ingredient: str = Field(default="", description="辅料")
+    side_weight: str = Field(default="", description="辅料克重")
+    cooking_method: str = Field(default="", description="烹饪方法")
+
+
+class DishRnDGraphOutput(BaseModel):
+    """菜品研发工作流输出"""
+    action: str = Field(..., description="执行的操作")
+    # 社媒洞察结果
+    insights: List[InsightItem] = Field(default=[], description="洞察列表")
+    # 菜品研发结果
+    image_url: str = Field(default="", description="菜品图片URL")
+    selling_points: List[str] = Field(default=[], description="卖点列表")
+
+
 class WeeklyReportInput(BaseModel):
     """研发任务周报生成节点输入"""
     app_token: str = Field(default="XqpUbfoHIa4LjcsgS3Ccr1uJnjg", description="飞书多维表格app_token")
