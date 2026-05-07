@@ -4,3 +4,6 @@ fastapi
 uvicorn
 python-multipart
 pydantic
+beautifulsoup4
+lxml
+requests
