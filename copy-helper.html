@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>文件复制助手 / File Copy Helper</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Noto Sans SC', sans-serif; background:#0C1B2A; color:#E8EDF2; padding:40px; }
+h1 { font-size:20px; margin-bottom:8px; }
+p { color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:30px; }
+.file-section { margin-bottom:30px; }
+.file-header { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.file-header h2 { font-size:15px; color:#14B8A6; }
+.file-header span { font-size:11px; color:rgba(255,255,255,0.3); }
+.copy-btn { padding:6px 16px; border-radius:5px; border:none; background:#14B8A6; color:#fff; font-size:12px; font-weight:600; cursor:pointer; }
+.copy-btn:hover { background:#0D9488; }
+.copy-btn.copied { background:#0D8A5E; }
+pre { background:#1A2332; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:12px; font-size:11px; color:#A78BFA; max-height:200px; overflow:auto; white-space:pre; word-break:normal; font-family: 'Courier New', monospace; }
+.step { background:rgba(255,255,255,0.05); border-radius:8px; padding:20px; margin-bottom:20px; }
+.step h3 { color:#14B8A6; font-size:14px; margin-bottom:8px; }
+.step p { font-size:12px; line-height:1.8; color:rgba(255,255,255,0.6); }
+.step code { background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:3px; font-size:11px; }
+</style>
+</head>
+<body>
+
+<h1>📋 文件复制助手 / File Copy Helper</h1>
+<p>点击"复制"按钮，然后到GitHub对应文件粘贴即可 / Click copy, then paste into GitHub file editor</p>
+
+<div class="step">
+<h3>操作步骤 / Steps</h3>
+<p>1. 打开 <a href="https://github.com/hsjt4bz9g6-create/haiqing-dish-rnd" style="color:#14B8A6;">GitHub仓库</a></p>
+<p>2. 进入对应文件，点 ✏️ 铅笔图标进入编辑模式</p>
+<p>3. <b>Ctrl+A</b> 全选旧内容 → <b>Delete</b> 删除</p>
+<p>4. 点击下方按钮复制新内容 → <b>Ctrl+V</b> 粘贴</p>
+<p>5. 点 <b>Commit changes</b> 保存</p>
+</div>
+
+<!-- 文件4: index.html -->
+<div class="file-section">
+<div class="file-header">
+<h2>文件4/5: vercel-frontend/index.html</h2>
+<span>895行 / 895 lines</span>
+<button class="copy-btn" onclick="copyFile('index-content')">📋 复制 / Copy</button>
+</div>
+<pre id="index-content"></pre>
+</div>
+
+<!-- 文件5: product.html -->
+<div class="file-section">
+<div class="file-header">
+<h2>文件5/5: vercel-frontend/product.html</h2>
+<span>547行 / 547 lines</span>
+<button class="copy-btn" onclick="copyFile('product-content')">📋 复制 / Copy</button>
+</div>
+<pre id="product-content"></pre>
+</div>
+
+<script>
+function copyFile(id) {
+    const el = document.getElementById(id);
+    const text = el.getAttribute('data-content');
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = el.previousElementSibling.querySelector('.copy-btn') || el.parentElement.querySelector('.copy-btn');
+        if (btn) { btn.textContent = '✅ 已复制!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = '📋 复制 / Copy'; btn.classList.remove('copied'); }, 2000); }
+    }).catch(() => {
+        // fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text; document.body.appendChild(textarea);
+        textarea.select(); document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const btn = el.parentElement.querySelector('.copy-btn');
+        if (btn) { btn.textContent = '✅ 已复制!'; setTimeout(() => { btn.textContent = '📋 复制 / Copy'; }, 2000); }
+    });
+}
+
+// Load file contents
+async function loadFiles() {
+    try {
+        const idxResp = await fetch('/index.html');
+        const idxText = await idxResp.text();
+        const idxEl = document.getElementById('index-content');
+        idxEl.textContent = idxText.substring(0, 500) + '\n... (完整内容已加载到剪贴板) ...';
+        idxEl.setAttribute('data-content', idxText);
+
+        const prdResp = await fetch('/product.html');
+        const prdText = await prdResp.text();
+        const prdEl = document.getElementById('product-content');
+        prdEl.textContent = prdText.substring(0, 500) + '\n... (完整内容已加载到剪贴板) ...';
+        prdEl.setAttribute('data-content', prdText);
+    } catch(e) {
+        document.getElementById('index-content').textContent = '加载失败，请直接用下方完整内容';
+        document.getElementById('product-content').textContent = '加载失败，请直接用下方完整内容';
+    }
+}
+loadFiles();
+</script>
+</body>
+</html>
