@@ -2,6 +2,7 @@
   "routes": [
     { "src": "/product.html", "dest": "/product.html" },
     { "src": "/product", "dest": "/product.html" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

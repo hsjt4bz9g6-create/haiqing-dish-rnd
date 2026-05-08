@@ -3,6 +3,7 @@ import os
 import json
 import logging
 import httpx
+import asyncpg
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -23,17 +24,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ========== Supabase 配置 ==========
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+# ========== 数据库配置 ==========
+DATABASE_URL = os.environ.get("PGDATABASE_URL", "")
 
-def get_supabase_headers():
-    return {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-    }
+# 数据库连接池
+db_pool = None
+
+@app.on_event("startup")
+async def startup():
+    global db_pool
+    if DATABASE_URL:
+        try:
+            db_pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+            logger.info("数据库连接池创建成功")
+        except Exception as e:
+            logger.error(f"数据库连接失败: {e}")
+
+@app.on_event("shutdown")
+async def shutdown():
+    global db_pool
+    if db_pool:
+        await db_pool.close()
 
 # ========== 社媒洞察数据 ==========
 PLATFORM_INSIGHTS = {
@@ -69,30 +80,30 @@ PLATFORM_INSIGHTS = {
 
 # ========== 营养数据库（每100g常见食材） ==========
 NUTRITION_DB = {
-    "鳕鱼": {"calories": 88, "protein": 20.4, "fat": 0.6, "carbs": 0, "fiber": 0},
-    "三文鱼": {"calories": 139, "protein": 21.6, "fat": 5.8, "carbs": 0, "fiber": 0},
-    "虾": {"calories": 87, "protein": 18.6, "fat": 0.8, "carbs": 1.0, "fiber": 0},
-    "大虾": {"calories": 87, "protein": 18.6, "fat": 0.8, "carbs": 1.0, "fiber": 0},
-    "扇贝": {"calories": 61, "protein": 12.2, "fat": 0.6, "carbs": 2.6, "fiber": 0},
-    "生蚝": {"calories": 73, "protein": 9.4, "fat": 2.2, "carbs": 4.5, "fiber": 0},
-    "龙虾": {"calories": 90, "protein": 18.9, "fat": 1.0, "carbs": 0.5, "fiber": 0},
-    "蟹": {"calories": 95, "protein": 16.0, "fat": 2.5, "carbs": 1.2, "fiber": 0},
-    "皮皮虾": {"calories": 101, "protein": 16.4, "fat": 2.2, "carbs": 2.8, "fiber": 0},
-    "鱿鱼": {"calories": 75, "protein": 17.0, "fat": 0.8, "carbs": 0.7, "fiber": 0},
-    "带鱼": {"calories": 127, "protein": 17.7, "fat": 4.9, "carbs": 3.1, "fiber": 0},
-    "石斑鱼": {"calories": 92, "protein": 19.5, "fat": 1.2, "carbs": 0, "fiber": 0},
-    "花甲": {"calories": 47, "protein": 7.7, "fat": 0.6, "carbs": 2.8, "fiber": 0},
-    "大闸蟹": {"calories": 103, "protein": 17.5, "fat": 2.6, "carbs": 2.3, "fiber": 0},
-    "黄油": {"calories": 717, "protein": 0.9, "fat": 81.1, "carbs": 0.1, "fiber": 0},
-    "柠檬": {"calories": 35, "protein": 1.1, "fat": 0.3, "carbs": 9.3, "fiber": 2.8},
-    "蒜": {"calories": 128, "protein": 6.4, "fat": 0.5, "carbs": 28.2, "fiber": 1.5},
-    "粉丝": {"calories": 336, "protein": 0.4, "fat": 0.1, "carbs": 84.0, "fiber": 0.2},
+    "鳕鱼": {"calories": 88, "protein": 20.4, "fat": 0.6, "carbs": 0, "sodium": 80},
+    "三文鱼": {"calories": 139, "protein": 21.6, "fat": 5.8, "carbs": 0, "sodium": 50},
+    "虾": {"calories": 87, "protein": 18.6, "fat": 0.8, "carbs": 1.0, "sodium": 165},
+    "大虾": {"calories": 87, "protein": 18.6, "fat": 0.8, "carbs": 1.0, "sodium": 165},
+    "扇贝": {"calories": 61, "protein": 12.2, "fat": 0.6, "carbs": 2.6, "sodium": 330},
+    "生蚝": {"calories": 73, "protein": 9.4, "fat": 2.2, "carbs": 4.5, "sodium": 210},
+    "龙虾": {"calories": 90, "protein": 18.9, "fat": 1.0, "carbs": 0.5, "sodium": 190},
+    "蟹": {"calories": 95, "protein": 16.0, "fat": 2.5, "carbs": 1.2, "sodium": 270},
+    "皮皮虾": {"calories": 101, "protein": 16.4, "fat": 2.2, "carbs": 2.8, "sodium": 180},
+    "鱿鱼": {"calories": 75, "protein": 17.0, "fat": 0.8, "carbs": 0.7, "sodium": 170},
+    "带鱼": {"calories": 127, "protein": 17.7, "fat": 4.9, "carbs": 3.1, "sodium": 150},
+    "石斑鱼": {"calories": 92, "protein": 19.5, "fat": 1.2, "carbs": 0, "sodium": 60},
+    "花甲": {"calories": 47, "protein": 7.7, "fat": 0.6, "carbs": 2.8, "sodium": 420},
+    "大闸蟹": {"calories": 103, "protein": 17.5, "fat": 2.6, "carbs": 2.3, "sodium": 260},
+    "黄油": {"calories": 717, "protein": 0.9, "fat": 81.1, "carbs": 0.1, "sodium": 640},
+    "柠檬": {"calories": 35, "protein": 1.1, "fat": 0.3, "carbs": 9.3, "sodium": 3},
+    "蒜": {"calories": 128, "protein": 6.4, "fat": 0.5, "carbs": 28.2, "sodium": 5},
+    "粉丝": {"calories": 336, "protein": 0.4, "fat": 0.1, "carbs": 84.0, "sodium": 10},
 }
 
 
 def estimate_nutrition(main_ingredient: str, main_weight: str, side_ingredients: list) -> dict:
     """根据食材估算营养五项"""
-    total = {"calories": 0, "protein": 0, "fat": 0, "carbs": 0, "fiber": 0}
+    total = {"calories": 0, "protein": 0, "fat": 0, "carbs": 0, "sodium": 0}
 
     def parse_weight(w: str) -> float:
         try:
@@ -105,7 +116,7 @@ def estimate_nutrition(main_ingredient: str, main_weight: str, side_ingredients:
         for key, val in NUTRITION_DB.items():
             if key in name:
                 return val
-        return {"calories": 100, "protein": 15, "fat": 3, "carbs": 5, "fiber": 0.5}
+        return {"calories": 100, "protein": 15, "fat": 3, "carbs": 5, "sodium": 200}
 
     # 主料
     w = parse_weight(main_weight)
@@ -128,7 +139,6 @@ def estimate_nutrition(main_ingredient: str, main_weight: str, side_ingredients:
         for k in total:
             total[k] += n.get(k, 0) * ratio
 
-    # 四舍五入
     return {k: round(v, 1) for k, v in total.items()}
 
 
@@ -167,17 +177,24 @@ class DishUpdateRequest(BaseModel):
 @app.get("/api/web/dishes")
 async def list_dishes():
     """获取所有菜品列表"""
-    if not SUPABASE_URL:
+    if not db_pool:
         return {"success": True, "dishes": []}
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(
-                f"{SUPABASE_URL}/rest/v1/dishes?order=updated_at.desc",
-                headers=get_supabase_headers()
-            )
-            if resp.status_code == 200:
-                return {"success": True, "dishes": resp.json()}
-            return {"success": True, "dishes": []}
+        async with db_pool.acquire() as conn:
+            rows = await conn.fetch("SELECT * FROM dishes ORDER BY updated_at DESC")
+            dishes = []
+            for row in rows:
+                d = dict(row)
+                # 解析JSONB字段
+                for field in ["side_ingredients", "selling_points", "nutrition"]:
+                    val = d.get(field)
+                    if isinstance(val, str):
+                        try:
+                            d[field] = json.loads(val)
+                        except Exception:
+                            d[field] = val
+                dishes.append(d)
+            return {"success": True, "dishes": dishes}
     except Exception as e:
         logger.error(f"获取菜品列表失败: {e}")
         return {"success": True, "dishes": []}
@@ -186,18 +203,21 @@ async def list_dishes():
 @app.get("/api/web/dishes/{dish_id}")
 async def get_dish(dish_id: int):
     """获取单个菜品"""
-    if not SUPABASE_URL:
+    if not db_pool:
         raise HTTPException(status_code=404, detail="Database not configured")
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(
-                f"{SUPABASE_URL}/rest/v1/dishes?id=eq.{dish_id}",
-                headers=get_supabase_headers()
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                if data:
-                    return {"success": True, "dish": data[0]}
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT * FROM dishes WHERE id = $1", dish_id)
+            if row:
+                d = dict(row)
+                for field in ["side_ingredients", "selling_points", "nutrition"]:
+                    val = d.get(field)
+                    if isinstance(val, str):
+                        try:
+                            d[field] = json.loads(val)
+                        except Exception:
+                            d[field] = val
+                return {"success": True, "dish": d}
         raise HTTPException(status_code=404, detail="Dish not found")
     except HTTPException:
         raise
@@ -209,87 +229,103 @@ async def get_dish(dish_id: int):
 @app.post("/api/web/dishes")
 async def create_dish(request: DishCreateRequest):
     """创建菜品"""
-    # 自动估算营养
     nutrition = request.nutrition
     if not nutrition:
         nutrition = estimate_nutrition(request.main_ingredient, request.main_weight, request.side_ingredients)
 
-    dish_data = {
-        "name": request.name,
-        "main_ingredient": request.main_ingredient,
-        "main_weight": request.main_weight,
-        "side_ingredients": json.dumps(request.side_ingredients, ensure_ascii=False),
-        "cooking_method": request.cooking_method,
-        "image_url": request.image_url,
-        "selling_points": json.dumps(request.selling_points, ensure_ascii=False),
-        "nutrition": json.dumps(nutrition, ensure_ascii=False),
-        "status": request.status,
-    }
-
-    if not SUPABASE_URL:
-        return {"success": True, "dish": dish_data, "nutrition": nutrition}
+    if not db_pool:
+        return {"success": True, "nutrition": nutrition}
 
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post(
-                f"{SUPABASE_URL}/rest/v1/dishes",
-                headers=get_supabase_headers(),
-                json=dish_data
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """INSERT INTO dishes (name, main_ingredient, main_weight, side_ingredients, cooking_method, image_url, selling_points, nutrition, status)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *""",
+                request.name,
+                request.main_ingredient,
+                request.main_weight,
+                json.dumps(request.side_ingredients, ensure_ascii=False),
+                request.cooking_method,
+                request.image_url,
+                json.dumps(request.selling_points, ensure_ascii=False),
+                json.dumps(nutrition, ensure_ascii=False),
+                request.status,
             )
-            if resp.status_code in (200, 201):
-                return {"success": True, "dish": resp.json()[0] if resp.json() else dish_data, "nutrition": nutrition}
-            logger.error(f"创建菜品失败: {resp.text}")
-            return {"success": False, "error": resp.text}
+            d = dict(row)
+            for field in ["side_ingredients", "selling_points", "nutrition"]:
+                val = d.get(field)
+                if isinstance(val, str):
+                    try:
+                        d[field] = json.loads(val)
+                    except Exception:
+                        d[field] = val
+            return {"success": True, "dish": d, "nutrition": nutrition}
     except Exception as e:
         logger.error(f"创建菜品失败: {e}")
-        return {"success": True, "dish": dish_data, "nutrition": nutrition}
+        return {"success": False, "error": str(e)}
 
 
 @app.put("/api/web/dishes/{dish_id}")
 async def update_dish(dish_id: int, request: DishUpdateRequest):
     """更新菜品"""
-    update_data = {}
-    for field in ["name", "main_ingredient", "main_weight", "cooking_method", "image_url", "status"]:
-        val = getattr(request, field, None)
-        if val is not None:
-            update_data[field] = val
-    for field in ["side_ingredients", "selling_points"]:
-        val = getattr(request, field, None)
-        if val is not None:
-            update_data[field] = json.dumps(val, ensure_ascii=False)
-    if request.nutrition is not None:
-        update_data["nutrition"] = json.dumps(request.nutrition, ensure_ascii=False)
-
-    # 如果修改了食材，重新估算营养
-    if request.main_ingredient is not None or request.main_weight is not None:
-        if not SUPABASE_URL:
-            old = {}
-        else:
-            async with httpx.AsyncClient(timeout=10) as client:
-                resp = await client.get(
-                    f"{SUPABASE_URL}/rest/v1/dishes?id=eq.{dish_id}",
-                    headers=get_supabase_headers()
-                )
-                old = resp.json()[0] if resp.status_code == 200 and resp.json() else {}
-        mi = request.main_ingredient or old.get("main_ingredient", "")
-        mw = request.main_weight or old.get("main_weight", "")
-        si = request.side_ingredients if request.side_ingredients is not None else (json.loads(old.get("side_ingredients", "[]")) if old.get("side_ingredients") else [])
-        nutrition = estimate_nutrition(mi, mw, si)
-        update_data["nutrition"] = json.dumps(nutrition, ensure_ascii=False)
-
-    if not SUPABASE_URL:
+    if not db_pool:
         return {"success": True}
 
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.patch(
-                f"{SUPABASE_URL}/rest/v1/dishes?id=eq.{dish_id}",
-                headers=get_supabase_headers(),
-                json=update_data
-            )
-            if resp.status_code in (200, 204):
+        async with db_pool.acquire() as conn:
+            # 先获取旧数据用于营养重算
+            old_row = await conn.fetchrow("SELECT * FROM dishes WHERE id = $1", dish_id)
+            if not old_row:
+                raise HTTPException(status_code=404, detail="Dish not found")
+            old = dict(old_row)
+
+            # 构建更新字段
+            updates = []
+            values = []
+            idx = 1
+
+            for field in ["name", "main_ingredient", "main_weight", "cooking_method", "image_url", "status"]:
+                val = getattr(request, field, None)
+                if val is not None:
+                    updates.append(f"{field} = ${idx}")
+                    values.append(val)
+                    idx += 1
+
+            for field in ["side_ingredients", "selling_points"]:
+                val = getattr(request, field, None)
+                if val is not None:
+                    updates.append(f"{field} = ${idx}")
+                    values.append(json.dumps(val, ensure_ascii=False))
+                    idx += 1
+
+            # 如果修改了食材，重新估算营养
+            if request.main_ingredient is not None or request.main_weight is not None or request.side_ingredients is not None:
+                mi = request.main_ingredient or old.get("main_ingredient", "")
+                mw = request.main_weight or old.get("main_weight", "")
+                si_raw = request.side_ingredients if request.side_ingredients is not None else old.get("side_ingredients", [])
+                if isinstance(si_raw, str):
+                    try:
+                        si_raw = json.loads(si_raw)
+                    except Exception:
+                        si_raw = []
+                nutrition = estimate_nutrition(mi, mw, si_raw)
+                updates.append(f"nutrition = ${idx}")
+                values.append(json.dumps(nutrition, ensure_ascii=False))
+                idx += 1
+            elif request.nutrition is not None:
+                updates.append(f"nutrition = ${idx}")
+                values.append(json.dumps(request.nutrition, ensure_ascii=False))
+                idx += 1
+
+            if not updates:
                 return {"success": True}
-            return {"success": False, "error": resp.text}
+
+            values.append(dish_id)
+            query = f"UPDATE dishes SET {', '.join(updates)}, updated_at = NOW() WHERE id = ${idx}"
+            await conn.execute(query, *values)
+            return {"success": True}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"更新菜品失败: {e}")
         return {"success": False, "error": str(e)}
@@ -298,17 +334,12 @@ async def update_dish(dish_id: int, request: DishUpdateRequest):
 @app.delete("/api/web/dishes/{dish_id}")
 async def delete_dish(dish_id: int):
     """删除菜品"""
-    if not SUPABASE_URL:
+    if not db_pool:
         return {"success": True}
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.delete(
-                f"{SUPABASE_URL}/rest/v1/dishes?id=eq.{dish_id}",
-                headers=get_supabase_headers()
-            )
-            if resp.status_code in (200, 204):
-                return {"success": True}
-            return {"success": False, "error": resp.text}
+        async with db_pool.acquire() as conn:
+            await conn.execute("DELETE FROM dishes WHERE id = $1", dish_id)
+            return {"success": True}
     except Exception as e:
         logger.error(f"删除菜品失败: {e}")
         return {"success": False, "error": str(e)}
@@ -394,17 +425,23 @@ class ProductUpdateRequest(BaseModel):
 @app.get("/api/web/products")
 async def list_products():
     """获取所有产品列表"""
-    if not SUPABASE_URL:
+    if not db_pool:
         return {"success": True, "products": []}
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(
-                f"{SUPABASE_URL}/rest/v1/products?order=updated_at.desc",
-                headers=get_supabase_headers()
-            )
-            if resp.status_code == 200:
-                return {"success": True, "products": resp.json()}
-            return {"success": True, "products": []}
+        async with db_pool.acquire() as conn:
+            rows = await conn.fetch("SELECT * FROM products ORDER BY updated_at DESC")
+            products = []
+            for row in rows:
+                p = dict(row)
+                for field in ["ingredients", "improvements"]:
+                    val = p.get(field)
+                    if isinstance(val, str):
+                        try:
+                            p[field] = json.loads(val)
+                        except Exception:
+                            p[field] = val
+                products.append(p)
+            return {"success": True, "products": products}
     except Exception as e:
         logger.error(f"获取产品列表失败: {e}")
         return {"success": True, "products": []}
@@ -413,18 +450,21 @@ async def list_products():
 @app.get("/api/web/products/{product_id}")
 async def get_product(product_id: int):
     """获取单个产品"""
-    if not SUPABASE_URL:
+    if not db_pool:
         raise HTTPException(status_code=404, detail="Database not configured")
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(
-                f"{SUPABASE_URL}/rest/v1/products?id=eq.{product_id}",
-                headers=get_supabase_headers()
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                if data:
-                    return {"success": True, "product": data[0]}
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT * FROM products WHERE id = $1", product_id)
+            if row:
+                p = dict(row)
+                for field in ["ingredients", "improvements"]:
+                    val = p.get(field)
+                    if isinstance(val, str):
+                        try:
+                            p[field] = json.loads(val)
+                        except Exception:
+                            p[field] = val
+                return {"success": True, "product": p}
         raise HTTPException(status_code=404, detail="Product not found")
     except HTTPException:
         raise
@@ -436,63 +476,71 @@ async def get_product(product_id: int):
 @app.post("/api/web/products")
 async def create_product(request: ProductCreateRequest):
     """创建产品"""
-    product_data = {
-        "name": request.name,
-        "recipe_name": request.recipe_name,
-        "cooking_method": request.cooking_method,
-        "ingredients": json.dumps(request.ingredients, ensure_ascii=False),
-        "lab_data": request.lab_data,
-        "image_url": request.image_url,
-        "improvements": json.dumps(request.improvements, ensure_ascii=False),
-        "summary": request.summary,
-        "status": request.status,
-    }
-
-    if not SUPABASE_URL:
-        return {"success": True, "product": product_data}
+    if not db_pool:
+        return {"success": True, "product": request.dict()}
 
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post(
-                f"{SUPABASE_URL}/rest/v1/products",
-                headers=get_supabase_headers(),
-                json=product_data
+        async with db_pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """INSERT INTO products (name, recipe_name, cooking_method, ingredients, lab_data, image_url, improvements, summary, status)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *""",
+                request.name,
+                request.recipe_name,
+                request.cooking_method,
+                json.dumps(request.ingredients, ensure_ascii=False),
+                request.lab_data,
+                request.image_url,
+                json.dumps(request.improvements, ensure_ascii=False),
+                request.summary,
+                request.status,
             )
-            if resp.status_code in (200, 201):
-                return {"success": True, "product": resp.json()[0] if resp.json() else product_data}
-            logger.error(f"创建产品失败: {resp.text}")
-            return {"success": False, "error": resp.text}
+            p = dict(row)
+            for field in ["ingredients", "improvements"]:
+                val = p.get(field)
+                if isinstance(val, str):
+                    try:
+                        p[field] = json.loads(val)
+                    except Exception:
+                        p[field] = val
+            return {"success": True, "product": p}
     except Exception as e:
         logger.error(f"创建产品失败: {e}")
-        return {"success": True, "product": product_data}
+        return {"success": False, "error": str(e)}
 
 
 @app.put("/api/web/products/{product_id}")
 async def update_product(product_id: int, request: ProductUpdateRequest):
     """更新产品"""
-    update_data = {}
-    for field in ["name", "recipe_name", "cooking_method", "lab_data", "image_url", "summary", "status"]:
-        val = getattr(request, field, None)
-        if val is not None:
-            update_data[field] = val
-    for field in ["ingredients", "improvements"]:
-        val = getattr(request, field, None)
-        if val is not None:
-            update_data[field] = json.dumps(val, ensure_ascii=False)
-
-    if not SUPABASE_URL:
+    if not db_pool:
         return {"success": True}
 
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.patch(
-                f"{SUPABASE_URL}/rest/v1/products?id=eq.{product_id}",
-                headers=get_supabase_headers(),
-                json=update_data
-            )
-            if resp.status_code in (200, 204):
+        async with db_pool.acquire() as conn:
+            updates = []
+            values = []
+            idx = 1
+
+            for field in ["name", "recipe_name", "cooking_method", "lab_data", "image_url", "summary", "status"]:
+                val = getattr(request, field, None)
+                if val is not None:
+                    updates.append(f"{field} = ${idx}")
+                    values.append(val)
+                    idx += 1
+
+            for field in ["ingredients", "improvements"]:
+                val = getattr(request, field, None)
+                if val is not None:
+                    updates.append(f"{field} = ${idx}")
+                    values.append(json.dumps(val, ensure_ascii=False))
+                    idx += 1
+
+            if not updates:
                 return {"success": True}
-            return {"success": False, "error": resp.text}
+
+            values.append(product_id)
+            query = f"UPDATE products SET {', '.join(updates)}, updated_at = NOW() WHERE id = ${idx}"
+            await conn.execute(query, *values)
+            return {"success": True}
     except Exception as e:
         logger.error(f"更新产品失败: {e}")
         return {"success": False, "error": str(e)}
@@ -501,17 +549,12 @@ async def update_product(product_id: int, request: ProductUpdateRequest):
 @app.delete("/api/web/products/{product_id}")
 async def delete_product(product_id: int):
     """删除产品"""
-    if not SUPABASE_URL:
+    if not db_pool:
         return {"success": True}
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.delete(
-                f"{SUPABASE_URL}/rest/v1/products?id=eq.{product_id}",
-                headers=get_supabase_headers()
-            )
-            if resp.status_code in (200, 204):
-                return {"success": True}
-            return {"success": False, "error": resp.text}
+        async with db_pool.acquire() as conn:
+            await conn.execute("DELETE FROM products WHERE id = $1", product_id)
+            return {"success": True}
     except Exception as e:
         logger.error(f"删除产品失败: {e}")
         return {"success": False, "error": str(e)}
@@ -549,12 +592,12 @@ async def analyze_product(
 # ========== 基础接口 ==========
 @app.get("/")
 async def root():
-    return {"message": "海青菜品研发API运行中", "status": "ok"}
+    return {"message": "海青菜品研发API运行中", "status": "ok", "db_connected": db_pool is not None}
 
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "service": "haiqing-dish-rnd-backend", "port": PORT}
+    return {"status": "healthy", "service": "haiqing-dish-rnd-backend", "port": PORT, "db_connected": db_pool is not None}
 
 
 if __name__ == "__main__":
