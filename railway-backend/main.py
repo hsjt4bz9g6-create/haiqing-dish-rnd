@@ -37,7 +37,12 @@ async def startup():
         try:
             # 移除asyncpg不支持的参数
             clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
-            db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10)
+            # 添加ssl参数支持
+            import ssl as ssl_module
+            ssl_ctx = ssl_module.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = ssl_module.CERT_NONE
+            db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10, ssl=ssl_ctx)
             logger.info("数据库连接池创建成功")
         except Exception as e:
             logger.error(f"数据库连接失败: {e}")
