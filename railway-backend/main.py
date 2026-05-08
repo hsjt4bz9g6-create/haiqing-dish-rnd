@@ -1,7 +1,6 @@
-# Railway后端部署配置
-# 简化版 - 不依赖外部SDK
+# 海青菜品研发API - Railway部署
+# 简化版 - 仅依赖FastAPI
 
-import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,7 +56,6 @@ async def get_insights(platform: str):
     """获取社媒洞察"""
     logger.info(f"获取洞察: platform={platform}")
     
-    # 模拟数据
     insights = [
         InsightItem(
             keyword="香煎鳕鱼",
@@ -81,7 +79,6 @@ async def generate_dish(request: DishGenerateRequest):
     """生成菜品图片和卖点"""
     logger.info(f"生成菜品: {request.dish_name}")
     
-    # 返回模拟数据
     return DishGenerateResponse(
         dish_name=request.dish_name,
         image_url="",
@@ -97,7 +94,7 @@ async def generate_dish(request: DishGenerateRequest):
 
 @app.get("/")
 async def root():
-    return {"message": "海青菜品研发API运行中"}
+    return {"message": "海青菜品研发API运行中", "status": "ok"}
 
 
 @app.get("/health")

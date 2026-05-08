@@ -1,9 +1,5 @@
-# Python依赖
-coze-coding-dev-sdk
+# Python依赖 - Railway部署
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
 pydantic
-beautifulsoup4
-lxml
-requests
