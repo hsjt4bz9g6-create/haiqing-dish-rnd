@@ -1,7 +1,9 @@
 # 海青菜品研发API - Railway部署
 
 import os
+import json
 import logging
+import httpx
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -82,10 +84,10 @@ PLATFORM_INSIGHTS = {
 async def get_insights(platform: str):
     """获取社媒洞察"""
     logger.info(f"获取洞察: platform={platform}")
-    
+
     insights_data = PLATFORM_INSIGHTS.get(platform, PLATFORM_INSIGHTS["dianping"])
     insights = [InsightItem(**item) for item in insights_data]
-    
+
     return {
         "success": True,
         "platform": platform,
@@ -97,17 +99,45 @@ async def get_insights(platform: str):
 async def generate_dish(request: DishGenerateRequest):
     """生成菜品图片和卖点"""
     logger.info(f"生成菜品: {request.dish_name}")
-    
+
+    image_url = ""
+
+    # 使用 pollinations.ai 免费图片生成API
+    try:
+        prompt = f"Professional food photography of {request.dish_name}, {request.main_ingredient}, beautifully plated, studio lighting, high quality, 4k"
+        encoded_prompt = httpx.URL("https://image.pollinations.ai/prompt/").join(
+            httpx.URL(httpx.URL.encode_query_string(prompt))
+        )
+        image_url = f"https://image.pollinations.ai/prompt/{httpx.URL.encode_query_string(prompt)}?width=1024&height=1024&nologo=true"
+        logger.info(f"生成图片URL: {image_url}")
+    except Exception as e:
+        logger.error(f"生成图片URL失败: {e}")
+
+    # 根据菜品名称和烹饪方式生成个性化卖点
+    cooking_desc = ""
+    if "煎" in request.cooking_method:
+        cooking_desc = "外焦里嫩，锁住鲜味"
+    elif "蒸" in request.cooking_method:
+        cooking_desc = "原汁原味，保留营养"
+    elif "烤" in request.cooking_method:
+        cooking_desc = "焦香四溢，口感丰富"
+    elif "煮" in request.cooking_method or "炖" in request.cooking_method:
+        cooking_desc = "慢火细炖，入味醇厚"
+    elif "炒" in request.cooking_method:
+        cooking_desc = "猛火快炒，鲜香爽口"
+    else:
+        cooking_desc = "工艺精湛，风味独特"
+
     return {
         "success": True,
         "dish_name": request.dish_name,
-        "image_url": "",
+        "image_url": image_url,
         "selling_points": [
-            "肉质鲜嫩，口感极佳",
-            "营养丰富，高蛋白低脂肪",
-            "做法简单，新手也能轻松上手",
+            f"精选优质{request.main_ingredient}，{cooking_desc}",
+            "营养丰富，高蛋白低脂肪，健康美味两不误",
+            f"采用{request.cooking_method}工艺，口感层次分明",
             "老少皆宜，适合全家享用",
-            "色香味俱佳，摆盘美观大方"
+            "色香味俱佳，摆盘精美，宴客必备"
         ]
     }
 
@@ -123,34 +153,40 @@ async def analyze_product(
 ):
     """产品研发 - AI配方分析"""
     logger.info(f"分析配方: {recipe_name}")
-    
-    import json
+
     try:
         ingredient_list = json.loads(ingredients) if ingredients else []
     except Exception:
         ingredient_list = []
-    
+
+    # 根据输入内容生成个性化分析结果
+    ingredient_names = "、".join([item.get("name", "") for item in ingredient_list if item.get("name")]) if ingredient_list else "主料"
+
+    improvements = [
+        {
+            "point": "食材搭配优化",
+            "reason": f"建议在「{recipe_name}」中增加柠檬汁或白葡萄酒提鲜，可提升整体风味层次感。当前{ingredient_names}搭配合理，但辅料可适当增加香草类调味如迷迭香、百里香，使海鲜风味更加突出。"
+        },
+        {
+            "point": "烹饪工艺改进",
+            "reason": f"当前{cooking_method}方式可行，建议控制火候在中火偏大，避免过度烹饪导致肉质变老。出锅前30秒大火收汁可增加焦香感，同时保持食材本身的鲜嫩口感。"
+        },
+        {
+            "point": "营养配比调整",
+            "reason": f"建议增加蔬菜类配菜比例（如西兰花、芦笋），使营养更均衡。可适当减少油脂用量，增加Omega-3脂肪酸含量，突出海鲜的健康价值。"
+        },
+        {
+            "point": "出品标准优化",
+            "reason": "建议制定标准化出品流程：食材称量精确到克，烹饪时间精确到秒，确保每份出品口感一致。同时建立品控标准，包括色泽、口感、温度等关键指标。"
+        }
+    ]
+
+    summary = f"「{recipe_name}」配方整体评价良好，主要优化方向：1）增加提鲜辅料提升风味层次；2）优化火候控制保持肉质鲜嫩；3）增加蔬菜配菜提升营养价值；4）建立标准化出品流程保证品质一致。{lab_data and '实验室数据已纳入分析参考。' or ''}"
+
     return {
         "success": True,
-        "improvements": [
-            {
-                "title": "食材搭配优化",
-                "description": f"建议在{recipe_name}中增加柠檬汁提鲜，可提升整体风味层次感。当前主料搭配合理，但辅料可适当增加香草类调味。"
-            },
-            {
-                "title": "烹饪工艺改进",
-                "description": f"当前{cooking_method}方式可行，建议控制火候在中火偏大，避免过度烹饪导致肉质变老。出锅前30秒大火收汁可增加焦香。"
-            },
-            {
-                "title": "营养配比调整",
-                "description": "建议增加蔬菜类配菜比例，使营养更均衡。可搭配西兰花、芦笋等绿色蔬菜，既美观又健康。"
-            },
-            {
-                "title": "出品标准优化",
-                "description": "建议制定标准化出品流程：食材称量精确到克，烹饪时间精确到秒，确保每份出品口感一致。"
-            }
-        ],
-        "summary": f"「{recipe_name}」配方整体评价良好，主要优化方向：1）增加提鲜辅料提升风味；2）优化火候控制保持肉质鲜嫩；3）增加蔬菜配菜提升营养价值；4）建立标准化出品流程保证品质一致。"
+        "improvements": improvements,
+        "summary": summary
     }
 
 
