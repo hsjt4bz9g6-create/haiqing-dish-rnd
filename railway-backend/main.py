@@ -2,6 +2,7 @@
 import os
 import json
 import logging
+import ssl as ssl_module
 import httpx
 import asyncpg
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -38,7 +39,6 @@ async def startup():
             # 移除asyncpg不支持的参数
             clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
             # 添加ssl参数支持
-            import ssl as ssl_module
             ssl_ctx = ssl_module.create_default_context()
             ssl_ctx.check_hostname = False
             ssl_ctx.verify_mode = ssl_module.CERT_NONE
