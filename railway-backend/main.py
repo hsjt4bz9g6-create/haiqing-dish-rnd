@@ -35,7 +35,9 @@ async def startup():
     global db_pool
     if DATABASE_URL:
         try:
-            db_pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+            # 移除asyncpg不支持的参数
+            clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
+            db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10)
             logger.info("数据库连接池创建成功")
         except Exception as e:
             logger.error(f"数据库连接失败: {e}")
