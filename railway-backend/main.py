@@ -5,6 +5,7 @@ import logging
 import ssl as ssl_module
 import httpx
 import asyncpg
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,7 +16,52 @@ logger = logging.getLogger(__name__)
 
 PORT = int(os.environ.get("PORT", 8000))
 
-app = FastAPI(title="海青菜品研发API")
+# ========== 数据库配置 ==========
+DATABASE_URL = os.environ.get("PGDATABASE_URL", "")
+
+# 数据库连接池
+db_pool = None
+
+@asynccontextmanager
+async def lifespan(app_instance):
+    """应用生命周期管理：启动时连接数据库，关闭时释放连接"""
+    global db_pool
+    if DATABASE_URL:
+        # 移除asyncpg不支持的参数
+        clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
+        logger.info(f"尝试连接数据库, URL前缀: {clean_url[:40]}...")
+        
+        # 方式1: 带SSL连接
+        try:
+            ssl_ctx = ssl_module.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = ssl_module.CERT_NONE
+            db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10, ssl=ssl_ctx)
+            async with db_pool.acquire() as conn:
+                val = await conn.fetchval("SELECT 1")
+                logger.info(f"数据库SSL连接成功, SELECT 1 = {val}")
+        except Exception as e:
+            logger.error(f"SSL连接失败: {type(e).__name__}: {e}")
+            # 方式2: 不带SSL连接
+            try:
+                db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10)
+                async with db_pool.acquire() as conn:
+                    val = await conn.fetchval("SELECT 1")
+                    logger.info(f"数据库无SSL连接成功, SELECT 1 = {val}")
+            except Exception as e2:
+                logger.error(f"无SSL连接也失败: {type(e2).__name__}: {e2}")
+                db_pool = None
+    else:
+        logger.warning("未设置PGDATABASE_URL环境变量，跳过数据库连接")
+    
+    yield  # 应用运行中
+    
+    # 关闭数据库连接
+    if db_pool:
+        await db_pool.close()
+        logger.info("数据库连接池已关闭")
+
+app = FastAPI(title="海青菜品研发API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,48 +70,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# ========== 数据库配置 ==========
-DATABASE_URL = os.environ.get("PGDATABASE_URL", "")
-
-# 数据库连接池
-db_pool = None
-
-@app.on_event("startup")
-async def startup():
-    global db_pool
-    if DATABASE_URL:
-        try:
-            # 移除asyncpg不支持的参数
-            clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
-            logger.info(f"尝试连接数据库, URL前缀: {clean_url[:30]}...")
-            # 添加ssl参数支持
-            ssl_ctx = ssl_module.create_default_context()
-            ssl_ctx.check_hostname = False
-            ssl_ctx.verify_mode = ssl_module.CERT_NONE
-            db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10, ssl=ssl_ctx)
-            # 验证连接
-            async with db_pool.acquire() as conn:
-                val = await conn.fetchval("SELECT 1")
-                logger.info(f"数据库连接验证成功, SELECT 1 = {val}")
-            logger.info("数据库连接池创建成功")
-        except Exception as e:
-            logger.error(f"数据库连接失败: {type(e).__name__}: {e}")
-            # 尝试不带SSL连接
-            try:
-                logger.info("尝试不带SSL连接...")
-                db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10)
-                async with db_pool.acquire() as conn:
-                    val = await conn.fetchval("SELECT 1")
-                    logger.info(f"无SSL连接成功, SELECT 1 = {val}")
-            except Exception as e2:
-                logger.error(f"无SSL连接也失败: {type(e2).__name__}: {e2}")
-
-@app.on_event("shutdown")
-async def shutdown():
-    global db_pool
-    if db_pool:
-        await db_pool.close()
 
 # ========== 社媒洞察数据 ==========
 PLATFORM_INSIGHTS = {
