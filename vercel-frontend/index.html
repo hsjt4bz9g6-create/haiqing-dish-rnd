@@ -1,323 +1,512 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>海青菜品应用研发工作台</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --primary:#0f766e;--primary-light:#14b8a6;--primary-dark:#0d5f59;
-    --accent:#f59e0b;--accent-light:#fbbf24;
-    --bg:#f0fdfa;--bg-card:#ffffff;--bg-dark:#042f2e;
-    --text:#1e293b;--text-light:#64748b;--text-white:#f0fdfa;
-    --border:#e2e8f0;--shadow:0 4px 24px rgba(15,118,110,.08);
-    --radius:16px;--radius-sm:10px;
-  }
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-  /* 顶部导航 */
-  .navbar{background:linear-gradient(135deg,var(--bg-dark) 0%,#0a3d3a 100%);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15)}
-  .nav-brand{display:flex;align-items:center;gap:14px}
-  .nav-logo{width:42px;height:42px;background:linear-gradient(135deg,var(--primary-light),var(--accent));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700}
-  .nav-title{color:#fff;font-size:20px;font-weight:700;letter-spacing:1px}
-  .nav-subtitle{color:rgba(240,253,250,.6);font-size:12px;margin-top:2px}
-  .nav-tabs{display:flex;gap:6px}
-  .nav-tab{padding:10px 24px;border-radius:var(--radius-sm);color:rgba(240,253,250,.7);font-size:14px;font-weight:500;cursor:pointer;transition:all .25s;border:none;background:transparent;text-decoration:none}
-  .nav-tab:hover{color:#fff;background:rgba(255,255,255,.08)}
-  .nav-tab.active{color:#fff;background:var(--primary);font-weight:600}
-
-  /* 主容器 */
-  .container{max-width:1400px;margin:0 auto;padding:28px 32px}
-
-  /* 卡片 */
-  .card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(15,118,110,.06);overflow:hidden;transition:transform .2s,box-shadow .2s}
-  .card:hover{box-shadow:0 8px 32px rgba(15,118,110,.12)}
-  .card-header{padding:22px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-  .card-header-left{display:flex;align-items:center;gap:12px}
-  .card-icon{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px}
-  .card-icon.insight{background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb}
-  .card-icon.dish{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706}
-  .card-title{font-size:17px;font-weight:700;color:var(--text)}
-  .card-body{padding:24px 28px}
-
-  /* 双栏布局 */
-  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:4px}
-
-  /* 平台标签 */
-  .platform-tabs{display:flex;gap:4px;background:#f1f5f9;padding:4px;border-radius:var(--radius-sm)}
-  .platform-tab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-light);cursor:pointer;transition:all .2s;border:none;background:transparent}
-  .platform-tab:hover{color:var(--text)}
-  .platform-tab.active{background:#fff;color:var(--primary);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-
-  /* 刷新按钮 */
-  .btn{padding:9px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:6px}
-  .btn-primary{background:var(--primary);color:#fff}
-  .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,118,110,.25)}
-  .btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
-  .btn-outline:hover{background:rgba(15,118,110,.05)}
-  .btn-accent{background:var(--accent);color:#fff}
-  .btn-accent:hover{background:#d97706;transform:translateY(-1px)}
-
-  /* 洞察列表 */
-  .insight-list{display:flex;flex-direction:column;gap:12px;margin-top:16px}
-  .insight-item{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:linear-gradient(135deg,#f0fdfa,#f8fafc);border-radius:var(--radius-sm);border:1px solid rgba(15,118,110,.08);transition:all .2s}
-  .insight-item:hover{border-color:var(--primary-light);transform:translateX(4px)}
-  .insight-rank{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-  .insight-content{flex:1}
-  .insight-keyword{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
-  .insight-desc{font-size:13px;color:var(--text-light);line-height:1.5}
-  .insight-source{display:inline-block;margin-top:6px;padding:2px 10px;background:#dbeafe;color:#2563eb;border-radius:20px;font-size:11px;font-weight:500}
-
-  /* 暂无数据 */
-  .empty-state{text-align:center;padding:48px 20px;color:var(--text-light)}
-  .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
-  .empty-text{font-size:14px}
-
-  /* 加载 */
-  .loading{text-align:center;padding:40px;color:var(--text-light);font-size:14px}
-  .spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* 表单 */
-  .form-group{margin-bottom:20px}
-  .form-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
-  .form-label .required{color:#ef4444;margin-left:2px}
-  .form-input,.form-textarea{width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);background:#fff;transition:all .2s;outline:none;font-family:inherit}
-  .form-input:focus,.form-textarea:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(20,184,166,.1)}
-  .form-textarea{resize:vertical;min-height:90px;line-height:1.6}
-  .form-input::placeholder,.form-textarea::placeholder{color:#94a3b8}
-
-  /* 辅料动态列表 */
-  .side-list{display:flex;flex-direction:column;gap:8px}
-  .side-row{display:flex;gap:8px;align-items:center}
-  .side-row .form-input{flex:1}
-  .btn-remove{width:32px;height:32px;border-radius:8px;border:1.5px solid #fecaca;background:#fef2f2;color:#ef4444;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-  .btn-remove:hover{background:#ef4444;color:#fff}
-  .btn-add{padding:8px 16px;border-radius:8px;border:1.5px dashed var(--primary-light);background:transparent;color:var(--primary);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
-  .btn-add:hover{background:rgba(15,118,110,.05);border-color:var(--primary)}
-
-  /* 生成结果 */
-  .result-section{margin-top:24px;padding-top:24px;border-top:1px solid var(--border)}
-  .result-image{text-align:center;margin-bottom:20px}
-  .result-image img{max-width:100%;max-height:360px;border-radius:var(--radius);box-shadow:0 4px 20px rgba(0,0,0,.1)}
-  .result-points{display:flex;flex-direction:column;gap:10px}
-  .point-item{padding:12px 16px;background:linear-gradient(135deg,#f0fdfa,#ecfdf5);border-radius:var(--radius-sm);border-left:3px solid var(--primary-light);font-size:14px;line-height:1.6;color:var(--text)}
-  .point-icon{margin-right:6px}
-
-  /* 响应式 */
-  @media(max-width:900px){
-    .main-grid{grid-template-columns:1fr}
-    .navbar{padding:0 16px;height:64px}
-    .container{padding:20px 16px}
-    .nav-subtitle{display:none}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜品研发 - 海青水产</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Noto Sans SC', sans-serif; }
+        .ocean-gradient { background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%); }
+        .card-shadow { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        .btn-primary { background: linear-gradient(135deg, #0ea5e9, #0284c7); transition: all 0.3s; }
+        .btn-primary:hover { background: linear-gradient(135deg, #38bdf8, #0ea5e9); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14,165,233,0.4); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-danger:hover { background: linear-gradient(135deg, #f87171, #ef4444); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-success:hover { background: linear-gradient(135deg, #34d399, #10b981); }
+        .tab-active { background: white; color: #0c4a6e; font-weight: 600; }
+        .tab-inactive { color: rgba(255,255,255,0.7); }
+        .tab-inactive:hover { color: white; background: rgba(255,255,255,0.1); }
+        .insight-card { transition: all 0.3s; border-left: 3px solid transparent; }
+        .insight-card:hover { border-left-color: #0ea5e9; transform: translateX(4px); background: #f0f9ff; }
+        .nutrition-bar { height: 8px; border-radius: 4px; transition: width 0.6s ease; }
+        .dish-item { transition: all 0.2s; }
+        .dish-item:hover { background: #f0f9ff; }
+        .slide-in { animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<!-- 导航栏 -->
-<nav class="navbar">
-  <div class="nav-brand">
-    <div class="nav-logo">🐟</div>
-    <div>
-      <div class="nav-title">海青菜品研发工作台</div>
-      <div class="nav-subtitle">大连海青水产有限公司 · 深海鱼加工及预制菜品研发</div>
+<!-- 顶部导航 -->
+<nav class="ocean-gradient text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">🐟</div>
+            <div>
+                <h1 class="text-lg font-bold leading-tight">菜品应用研发工作台</h1>
+                <p class="text-xs text-sky-200">大连海青水产 · 深海鱼加工及预制菜品研发</p>
+            </div>
+        </div>
+        <div class="flex gap-1 bg-white/10 rounded-xl p-1">
+            <a href="index.html" class="tab-active px-4 py-2 rounded-lg text-sm">菜品研发</a>
+            <a href="product.html" class="tab-inactive px-4 py-2 rounded-lg text-sm">产品研发</a>
+        </div>
     </div>
-  </div>
-  <div class="nav-tabs">
-    <a class="nav-tab active" href="/">菜品研发</a>
-    <a class="nav-tab" href="/product.html">产品研发</a>
-  </div>
 </nav>
 
-<!-- 主内容 -->
-<div class="container">
-  <div class="main-grid">
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- 左：社媒洞察 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon insight">📊</div>
-          <div class="card-title">社媒洞察</div>
-        </div>
-        <button class="btn btn-outline" onclick="fetchInsights()">🔄 刷新数据</button>
-      </div>
-      <div class="card-body">
-        <div class="platform-tabs" id="platformTabs">
-          <button class="platform-tab active" data-platform="dianping">大众点评</button>
-          <button class="platform-tab" data-platform="xiaohongshu">小红书</button>
-          <button class="platform-tab" data-platform="douyin">抖音</button>
-          <button class="platform-tab" data-platform="meituan">美团</button>
-        </div>
-        <div id="insightContent">
-          <div class="empty-state">
-            <div class="empty-icon">📈</div>
-            <div class="empty-text">点击「刷新数据」获取社媒洞察</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 右：菜品研发 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon dish">🍳</div>
-          <div class="card-title">菜品研发</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <form id="dishForm" onsubmit="generateDish(event)">
-          <div class="form-group">
-            <label class="form-label">菜品名称<span class="required">*</span></label>
-            <input class="form-input" id="dishName" placeholder="例如：香煎鳕鱼" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">主料及克重<span class="required">*</span></label>
-            <input class="form-input" id="mainIngredient" placeholder="例如：鳕鱼200g" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">辅料及克重</label>
-            <div class="side-list" id="sideList">
-              <div class="side-row">
-                <input class="form-input" placeholder="例如：黄油20g">
-                <button type="button" class="btn-remove" onclick="removeSide(this)">×</button>
-              </div>
+        <!-- 左侧：社媒洞察 -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-chart-line text-sky-500"></i>
+                        <h2 class="font-semibold text-gray-800">社媒洞察</h2>
+                    </div>
+                    <button onclick="refreshInsights()" class="text-xs bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg hover:bg-sky-100 transition">
+                        <i class="fas fa-sync-alt mr-1"></i>刷新
+                    </button>
+                </div>
+                <!-- 平台切换 -->
+                <div class="px-5 pt-3 flex gap-2 flex-wrap" id="platformTabs">
+                    <button onclick="switchPlatform('dianping')" class="platform-tab px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500 text-white" data-platform="dianping">大众点评</button>
+                    <button onclick="switchPlatform('xiaohongshu')" class="platform-tab px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200" data-platform="xiaohongshu">小红书</button>
+                    <button onclick="switchPlatform('douyin')" class="platform-tab px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200" data-platform="douyin">抖音</button>
+                    <button onclick="switchPlatform('meituan')" class="platform-tab px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200" data-platform="meituan">美团</button>
+                </div>
+                <!-- 洞察列表 -->
+                <div class="p-5 space-y-3" id="insightsList">
+                    <div class="text-center text-gray-400 py-8"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</div>
+                </div>
             </div>
-            <button type="button" class="btn-add" onclick="addSide()" style="margin-top:8px">+ 添加辅料</button>
-          </div>
-          <div class="form-group">
-            <label class="form-label">烹饪方法<span class="required">*</span></label>
-            <textarea class="form-textarea" id="cookingMethod" placeholder="例如：鳕鱼解冻，放入锅内香煎至两面金黄" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-accent" style="width:100%;justify-content:center;padding:13px;font-size:15px">
-            🎨 生成菜品图片和卖点
-          </button>
-        </form>
-        <div id="dishResult"></div>
-      </div>
-    </div>
+        </div>
 
-  </div>
+        <!-- 右侧：菜品研发 -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- 已保存菜品列表 -->
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-list text-sky-500"></i>
+                        <h2 class="font-semibold text-gray-800">已保存菜品</h2>
+                        <span id="dishCount" class="text-xs bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <button onclick="showDishForm()" class="btn-primary text-white text-xs px-4 py-2 rounded-lg">
+                        <i class="fas fa-plus mr-1"></i>新建菜品
+                    </button>
+                </div>
+                <div id="dishList" class="divide-y divide-gray-50">
+                    <div class="text-center text-gray-400 py-8">暂无保存的菜品</div>
+                </div>
+            </div>
+
+            <!-- 菜品录入/编辑表单 -->
+            <div id="dishFormPanel" class="bg-white rounded-2xl card-shadow overflow-hidden hidden slide-in">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-utensils text-sky-500"></i>
+                        <h2 class="font-semibold text-gray-800" id="formTitle">新建菜品</h2>
+                    </div>
+                    <button onclick="hideDishForm()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="p-5">
+                    <input type="hidden" id="editDishId" value="">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">菜品名称 <span class="text-red-500">*</span></label>
+                            <input type="text" id="dishName" placeholder="例如：香煎鳕鱼" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">主料 <span class="text-red-500">*</span></label>
+                            <input type="text" id="mainIngredient" placeholder="例如：鳕鱼" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">主料克重</label>
+                            <input type="text" id="mainWeight" placeholder="例如：200g" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">烹饪方法 <span class="text-red-500">*</span></label>
+                            <input type="text" id="cookingMethod" placeholder="例如：香煎至两面金黄" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                    </div>
+                    <!-- 辅料 -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">辅料</label>
+                        <div id="sideIngredients" class="space-y-2"></div>
+                        <button onclick="addSideIngredient()" class="mt-2 text-sm text-sky-600 hover:text-sky-700"><i class="fas fa-plus mr-1"></i>添加辅料</button>
+                    </div>
+                    <!-- 操作按钮 -->
+                    <div class="mt-6 flex gap-3 flex-wrap">
+                        <button onclick="generateDish()" id="generateBtn" class="btn-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium">
+                            <i class="fas fa-magic mr-2"></i>生成图片和卖点
+                        </button>
+                        <button onclick="saveDish()" class="btn-success text-white px-5 py-2.5 rounded-xl text-sm font-medium">
+                            <i class="fas fa-save mr-2"></i>保存菜品
+                        </button>
+                        <button onclick="hideDishForm()" class="bg-gray-100 text-gray-600 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-200">
+                            取消
+                        </button>
+                    </div>
+                    <!-- 生成结果 -->
+                    <div id="generateResult" class="mt-6 hidden fade-in">
+                        <div class="border-t border-gray-100 pt-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- 图片 -->
+                                <div id="imageSection">
+                                    <div class="bg-gray-50 rounded-xl p-4 text-center" id="dishImageContainer">
+                                        <div class="text-gray-400 py-8"><i class="fas fa-image text-3xl mb-2"></i><p class="text-sm">点击"生成图片和卖点"</p></div>
+                                    </div>
+                                </div>
+                                <!-- 卖点 + 营养 -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-star text-amber-400 mr-1"></i>卖点</h4>
+                                        <div id="sellingPoints" class="space-y-1.5"></div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-chart-pie text-green-500 mr-1"></i>营养估算（每份）</h4>
+                                        <div id="nutritionInfo" class="bg-gray-50 rounded-xl p-4 space-y-2.5"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
 const API_BASE = "https://haiqing-dish-rnd-production.up.railway.app";
 let currentPlatform = "dianping";
+let sideIngredientCount = 0;
+let currentImageData = "";
+let currentSellingPoints = [];
+let currentNutrition = {};
 
-// 平台标签切换
-document.querySelectorAll('.platform-tab').forEach(tab => {
-  tab.addEventListener('click', function() {
-    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
-    this.classList.add('active');
-    currentPlatform = this.dataset.platform;
-    fetchInsights();
-  });
-});
-
-// 获取社媒洞察
-async function fetchInsights() {
-  const container = document.getElementById('insightContent');
-  container.innerHTML = '<div class="loading"><div class="spinner"></div><br>正在获取数据...</div>';
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/web/insights/${currentPlatform}`);
-    const data = await resp.json();
-
-    if (data.success && data.insights && data.insights.length > 0) {
-      container.innerHTML = '<div class="insight-list">' +
-        data.insights.map((item, i) => `
-          <div class="insight-item">
-            <div class="insight-rank">${i + 1}</div>
-            <div class="insight-content">
-              <div class="insight-keyword">${item.keyword}</div>
-              <div class="insight-desc">${item.description}</div>
-              <span class="insight-source">${item.source || currentPlatform}</span>
-            </div>
-          </div>
-        `).join('') + '</div>';
-    } else {
-      container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无数据</div></div>';
-    }
-  } catch (e) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">获取数据失败，请检查网络连接</div></div>';
-  }
-}
-
-// 添加辅料
-function addSide() {
-  const list = document.getElementById('sideList');
-  const row = document.createElement('div');
-  row.className = 'side-row';
-  row.innerHTML = '<input class="form-input" placeholder="例如：柠檬汁10ml"><button type="button" class="btn-remove" onclick="removeSide(this)">×</button>';
-  list.appendChild(row);
-}
-
-// 删除辅料
-function removeSide(btn) {
-  const list = document.getElementById('sideList');
-  if (list.children.length > 1) {
-    btn.parentElement.remove();
-  }
-}
-
-// 生成菜品
-async function generateDish(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
-  const resultDiv = document.getElementById('dishResult');
-  btn.disabled = true;
-  btn.textContent = '⏳ 生成中...';
-  resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><br>AI正在生成菜品图片和卖点，请稍候...</div>';
-
-  const dishName = document.getElementById('dishName').value;
-  const mainIngredient = document.getElementById('mainIngredient').value;
-  const cookingMethod = document.getElementById('cookingMethod').value;
-
-  // 收集辅料
-  const sideInputs = document.querySelectorAll('#sideList .form-input');
-  const sideIngredient = Array.from(sideInputs).map(input => input.value).filter(v => v.trim()).join('、');
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/web/dish/generate`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        dish_name: dishName,
-        main_ingredient: mainIngredient,
-        side_ingredient: sideIngredient,
-        cooking_method: cookingMethod
-      })
+// ========== 社媒洞察 ==========
+async function switchPlatform(platform) {
+    currentPlatform = platform;
+    document.querySelectorAll('.platform-tab').forEach(t => {
+        t.classList.remove('bg-sky-500', 'text-white');
+        t.classList.add('bg-gray-100', 'text-gray-600');
     });
-    const data = await resp.json();
-
-    if (data.success) {
-      let html = '<div class="result-section">';
-      if (data.image_url) {
-        html += `<div class="result-image"><img src="${data.image_url}" alt="${dishName}" onerror="this.style.display='none'"></div>`;
-      }
-      if (data.selling_points && data.selling_points.length > 0) {
-        html += '<div class="result-points">' +
-          data.selling_points.map(p => `<div class="point-item"><span class="point-icon">✨</span>${p}</div>`).join('') +
-          '</div>';
-      }
-      html += '</div>';
-      resultDiv.innerHTML = html;
-    } else {
-      resultDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">生成失败，请重试</div></div>';
+    const active = document.querySelector(`.platform-tab[data-platform="${platform}"]`);
+    if (active) {
+        active.classList.remove('bg-gray-100', 'text-gray-600');
+        active.classList.add('bg-sky-500', 'text-white');
     }
-  } catch (err) {
-    resultDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">网络错误，请重试</div></div>';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🎨 生成菜品图片和卖点';
-  }
+    await loadInsights();
 }
 
-// 页面加载自动获取洞察
-window.addEventListener('load', () => { fetchInsights(); });
+async function loadInsights() {
+    const list = document.getElementById('insightsList');
+    list.innerHTML = '<div class="text-center text-gray-400 py-8"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</div>';
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/insights/${currentPlatform}`);
+        const data = await resp.json();
+        if (data.success && data.insights && data.insights.length > 0) {
+            list.innerHTML = data.insights.map(item => `
+                <div class="insight-card p-3 rounded-xl cursor-pointer" onclick="applyInsight('${item.keyword}', '${item.description}')">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-sky-50 rounded-lg flex items-center justify-center text-sky-500 text-sm flex-shrink-0 mt-0.5">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-semibold text-gray-800 text-sm">${item.keyword}</div>
+                            <div class="text-xs text-gray-500 mt-0.5 line-clamp-2">${item.description}</div>
+                            <div class="text-xs text-sky-500 mt-1">${item.source || ''}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            list.innerHTML = '<div class="text-center text-gray-400 py-8">暂无数据</div>';
+        }
+    } catch (e) {
+        list.innerHTML = '<div class="text-center text-red-400 py-8"><i class="fas fa-exclamation-circle mr-1"></i>加载失败，请重试</div>';
+    }
+}
+
+async function refreshInsights() { await loadInsights(); }
+
+function applyInsight(keyword, desc) {
+    if (!document.getElementById('dishFormPanel').classList.contains('hidden')) {
+        document.getElementById('dishName').value = keyword;
+    } else {
+        showDishForm();
+        document.getElementById('dishName').value = keyword;
+    }
+}
+
+// ========== 菜品列表 ==========
+async function loadDishes() {
+    const list = document.getElementById('dishList');
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/dishes`);
+        const data = await resp.json();
+        if (data.success && data.dishes && data.dishes.length > 0) {
+            document.getElementById('dishCount').textContent = data.dishes.length;
+            list.innerHTML = data.dishes.map(d => {
+                const n = typeof d.nutrition === 'string' ? JSON.parse(d.nutrition || '{}') : (d.nutrition || {});
+                return `
+                <div class="dish-item px-5 py-4 flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
+                        ${d.image_url ? `<img src="${d.image_url}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-2xl">🍽️</div>'}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-800">${d.name}</div>
+                        <div class="text-xs text-gray-500 mt-0.5">${d.main_ingredient} ${d.main_weight} · ${d.status === 'draft' ? '草稿' : d.status === 'published' ? '已发布' : d.status}</div>
+                        ${n.protein ? `<div class="text-xs text-green-600 mt-1"><i class="fas fa-chart-pie mr-1"></i>蛋白质 ${n.protein}g · 热量 ${n.calories}kcal</div>` : ''}
+                    </div>
+                    <div class="flex gap-2 flex-shrink-0">
+                        <button onclick="editDish(${d.id})" class="text-sky-500 hover:text-sky-700 text-sm px-2 py-1"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteDish(${d.id})" class="text-red-400 hover:text-red-600 text-sm px-2 py-1"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            document.getElementById('dishCount').textContent = '0';
+            list.innerHTML = '<div class="text-center text-gray-400 py-8"><i class="fas fa-inbox text-3xl mb-2"></i><p class="text-sm">暂无保存的菜品，点击"新建菜品"开始</p></div>';
+        }
+    } catch (e) {
+        list.innerHTML = '<div class="text-center text-red-400 py-8">加载失败</div>';
+    }
+}
+
+// ========== 菜品表单 ==========
+function showDishForm(dish = null) {
+    document.getElementById('dishFormPanel').classList.remove('hidden');
+    document.getElementById('generateResult').classList.add('hidden');
+    if (dish) {
+        document.getElementById('formTitle').textContent = '编辑菜品';
+        document.getElementById('editDishId').value = dish.id;
+        document.getElementById('dishName').value = dish.name || '';
+        document.getElementById('mainIngredient').value = dish.main_ingredient || '';
+        document.getElementById('mainWeight').value = dish.main_weight || '';
+        document.getElementById('cookingMethod').value = dish.cooking_method || '';
+        currentImageData = dish.image_url || '';
+        const si = typeof dish.side_ingredients === 'string' ? JSON.parse(dish.side_ingredients || '[]') : (dish.side_ingredients || []);
+        document.getElementById('sideIngredients').innerHTML = '';
+        sideIngredientCount = 0;
+        si.forEach(s => {
+            const name = typeof s === 'string' ? s : (s.name || '');
+            const weight = typeof s === 'object' ? (s.weight || '') : '';
+            addSideIngredient(name, weight);
+        });
+        const sp = typeof dish.selling_points === 'string' ? JSON.parse(dish.selling_points || '[]') : (dish.selling_points || []);
+        currentSellingPoints = sp;
+        const n = typeof dish.nutrition === 'string' ? JSON.parse(dish.nutrition || '{}') : (dish.nutrition || {});
+        currentNutrition = n;
+        if (dish.image_url || sp.length || n.protein) {
+            showGenerateResult(dish.image_url, sp, n);
+        }
+    } else {
+        document.getElementById('formTitle').textContent = '新建菜品';
+        document.getElementById('editDishId').value = '';
+        document.getElementById('dishName').value = '';
+        document.getElementById('mainIngredient').value = '';
+        document.getElementById('mainWeight').value = '';
+        document.getElementById('cookingMethod').value = '';
+        document.getElementById('sideIngredients').innerHTML = '';
+        sideIngredientCount = 0;
+        currentImageData = '';
+        currentSellingPoints = [];
+        currentNutrition = {};
+    }
+    addSideIngredient();
+}
+
+function hideDishForm() {
+    document.getElementById('dishFormPanel').classList.add('hidden');
+}
+
+function addSideIngredient(name = '', weight = '') {
+    sideIngredientCount++;
+    const id = sideIngredientCount;
+    const container = document.getElementById('sideIngredients');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.id = `sideIng${id}`;
+    div.innerHTML = `
+        <input type="text" placeholder="辅料名称" value="${name}" class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm side-ing-name">
+        <input type="text" placeholder="克重" value="${weight}" class="w-24 border border-gray-200 rounded-xl px-3 py-2 text-sm side-ing-weight">
+        <button onclick="document.getElementById('sideIng${id}').remove()" class="text-red-400 hover:text-red-600 text-sm px-2"><i class="fas fa-times-circle"></i></button>
+    `;
+    container.appendChild(div);
+}
+
+function getSideIngredients() {
+    const items = [];
+    document.querySelectorAll('#sideIngredients > div').forEach(div => {
+        const n = div.querySelector('.side-ing-name')?.value?.trim();
+        const w = div.querySelector('.side-ing-weight')?.value?.trim();
+        if (n) items.push({ name: n, weight: w || '50' });
+    });
+    return items;
+}
+
+// ========== 生成图片和卖点 ==========
+async function generateDish() {
+    const name = document.getElementById('dishName').value.trim();
+    const mi = document.getElementById('mainIngredient').value.trim();
+    const mw = document.getElementById('mainWeight').value.trim();
+    const cm = document.getElementById('cookingMethod').value.trim();
+    if (!name || !mi || !cm) { alert('请填写菜品名称、主料和烹饪方法'); return; }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>生成中...';
+
+    try {
+        const si = getSideIngredients();
+        const resp = await fetch(`${API_BASE}/api/web/dish/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dish_name: name, main_ingredient: mi, main_weight: mw,
+                side_ingredient: si.length ? si.map(s => s.name).join('、') : '',
+                side_weight: si.length ? si.map(s => s.weight).join('、') : '',
+                cooking_method: cm
+            })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            currentImageData = data.image_url || '';
+            currentSellingPoints = data.selling_points || [];
+            currentNutrition = data.nutrition || {};
+            showGenerateResult(data.image_url, data.selling_points, data.nutrition);
+        } else {
+            alert('生成失败：' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('网络错误，请重试');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magic mr-2"></i>生成图片和卖点';
+    }
+}
+
+function showGenerateResult(imageUrl, points, nutrition) {
+    document.getElementById('generateResult').classList.remove('hidden');
+    // 图片
+    const imgContainer = document.getElementById('dishImageContainer');
+    if (imageUrl) {
+        imgContainer.innerHTML = `<img src="${imageUrl}" class="w-full rounded-xl" alt="菜品图片">`;
+    } else {
+        imgContainer.innerHTML = '<div class="text-gray-400 py-8"><i class="fas fa-image text-3xl mb-2"></i><p class="text-sm">图片生成中或暂无图片</p></div>';
+    }
+    // 卖点
+    const spEl = document.getElementById('sellingPoints');
+    if (points && points.length) {
+        spEl.innerHTML = points.map(p => `<div class="flex items-start gap-2 text-sm"><i class="fas fa-check-circle text-amber-400 mt-0.5 flex-shrink-0"></i><span class="text-gray-700">${p}</span></div>`).join('');
+    } else {
+        spEl.innerHTML = '<div class="text-xs text-gray-400">暂无卖点</div>';
+    }
+    // 营养
+    const nEl = document.getElementById('nutritionInfo');
+    if (nutrition && (nutrition.protein || nutrition.calories)) {
+        const items = [
+            { label: '热量', value: nutrition.calories || 0, unit: 'kcal', max: 800, color: 'bg-red-400' },
+            { label: '蛋白质', value: nutrition.protein || 0, unit: 'g', max: 50, color: 'bg-blue-400' },
+            { label: '脂肪', value: nutrition.fat || 0, unit: 'g', max: 30, color: 'bg-yellow-400' },
+            { label: '碳水', value: nutrition.carbs || 0, unit: 'g', max: 60, color: 'bg-green-400' },
+            { label: '膳食纤维', value: nutrition.fiber || 0, unit: 'g', max: 10, color: 'bg-purple-400' }
+        ];
+        nEl.innerHTML = items.map(it => `
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-600">${it.label}</span>
+                    <span class="font-semibold text-gray-800">${it.value}${it.unit}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="nutrition-bar ${it.color}" style="width: ${Math.min(100, (it.value / it.max) * 100)}%"></div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        nEl.innerHTML = '<div class="text-xs text-gray-400">点击"生成图片和卖点"后自动估算</div>';
+    }
+}
+
+// ========== 保存菜品 ==========
+async function saveDish() {
+    const name = document.getElementById('dishName').value.trim();
+    const mi = document.getElementById('mainIngredient').value.trim();
+    if (!name || !mi) { alert('请填写菜品名称和主料'); return; }
+
+    const dishData = {
+        name: name,
+        main_ingredient: mi,
+        main_weight: document.getElementById('mainWeight').value.trim(),
+        side_ingredients: getSideIngredients(),
+        cooking_method: document.getElementById('cookingMethod').value.trim(),
+        image_url: currentImageData,
+        selling_points: currentSellingPoints,
+        nutrition: currentNutrition,
+        status: 'draft'
+    };
+
+    try {
+        const editId = document.getElementById('editDishId').value;
+        let resp;
+        if (editId) {
+            resp = await fetch(`${API_BASE}/api/web/dishes/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dishData)
+            });
+        } else {
+            resp = await fetch(`${API_BASE}/api/web/dishes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dishData)
+            });
+        }
+        const data = await resp.json();
+        if (data.success) {
+            alert('保存成功！');
+            hideDishForm();
+            await loadDishes();
+        } else {
+            alert('保存失败：' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('网络错误，请重试');
+    }
+}
+
+// ========== 编辑菜品 ==========
+async function editDish(id) {
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/dishes/${id}`);
+        const data = await resp.json();
+        if (data.success && data.dish) {
+            showDishForm(data.dish);
+        } else {
+            alert('获取菜品信息失败');
+        }
+    } catch (e) {
+        alert('网络错误');
+    }
+}
+
+// ========== 删除菜品 ==========
+async function deleteDish(id) {
+    if (!confirm('确定要删除这个菜品吗？')) return;
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/dishes/${id}`, { method: 'DELETE' });
+        const data = await resp.json();
+        if (data.success) { await loadDishes(); }
+        else { alert('删除失败'); }
+    } catch (e) { alert('网络错误'); }
+}
+
+// ========== 初始化 ==========
+document.addEventListener('DOMContentLoaded', () => {
+    loadInsights();
+    loadDishes();
+});
 </script>
 </body>
 </html>

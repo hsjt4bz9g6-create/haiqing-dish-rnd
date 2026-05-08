@@ -1,282 +1,375 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>海青产品研发 - AI配方分析</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --primary:#0f766e;--primary-light:#14b8a6;--primary-dark:#0d5f59;
-    --accent:#f59e0b;--accent-light:#fbbf24;
-    --bg:#f0fdfa;--bg-card:#ffffff;--bg-dark:#042f2e;
-    --text:#1e293b;--text-light:#64748b;--text-white:#f0fdfa;
-    --border:#e2e8f0;--shadow:0 4px 24px rgba(15,118,110,.08);
-    --radius:16px;--radius-sm:10px;
-  }
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-  .navbar{background:linear-gradient(135deg,var(--bg-dark) 0%,#0a3d3a 100%);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15)}
-  .nav-brand{display:flex;align-items:center;gap:14px}
-  .nav-logo{width:42px;height:42px;background:linear-gradient(135deg,var(--primary-light),var(--accent));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700}
-  .nav-title{color:#fff;font-size:20px;font-weight:700;letter-spacing:1px}
-  .nav-subtitle{color:rgba(240,253,250,.6);font-size:12px;margin-top:2px}
-  .nav-tabs{display:flex;gap:6px}
-  .nav-tab{padding:10px 24px;border-radius:var(--radius-sm);color:rgba(240,253,250,.7);font-size:14px;font-weight:500;cursor:pointer;transition:all .25s;border:none;background:transparent;text-decoration:none}
-  .nav-tab:hover{color:#fff;background:rgba(255,255,255,.08)}
-  .nav-tab.active{color:#fff;background:var(--primary);font-weight:600}
-
-  .container{max-width:1200px;margin:0 auto;padding:28px 32px}
-
-  .card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(15,118,110,.06);overflow:hidden;transition:transform .2s,box-shadow .2s}
-  .card:hover{box-shadow:0 8px 32px rgba(15,118,110,.12)}
-  .card-header{padding:22px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-  .card-header-left{display:flex;align-items:center;gap:12px}
-  .card-icon{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px}
-  .card-icon.product{background:linear-gradient(135deg,#fce7f3,#fbcfe8);color:#db2777}
-  .card-title{font-size:17px;font-weight:700;color:var(--text)}
-  .card-body{padding:24px 28px}
-
-  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:4px}
-
-  .btn{padding:9px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:6px}
-  .btn-primary{background:var(--primary);color:#fff}
-  .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,118,110,.25)}
-  .btn-accent{background:var(--accent);color:#fff}
-  .btn-accent:hover{background:#d97706;transform:translateY(-1px)}
-  .btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
-  .btn-outline:hover{background:rgba(15,118,110,.05)}
-
-  .form-group{margin-bottom:20px}
-  .form-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
-  .form-label .required{color:#ef4444;margin-left:2px}
-  .form-input,.form-textarea,.form-select{width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);background:#fff;transition:all .2s;outline:none;font-family:inherit}
-  .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(20,184,166,.1)}
-  .form-textarea{resize:vertical;min-height:90px;line-height:1.6}
-  .form-input::placeholder,.form-textarea::placeholder{color:#94a3b8}
-
-  .file-upload{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}
-  .file-upload:hover{border-color:var(--primary-light);background:rgba(15,118,110,.02)}
-  .file-upload-icon{font-size:32px;margin-bottom:8px;opacity:.5}
-  .file-upload-text{font-size:13px;color:var(--text-light)}
-  .file-upload input{display:none}
-
-  .ingredient-list{display:flex;flex-direction:column;gap:8px}
-  .ingredient-row{display:flex;gap:8px;align-items:center}
-  .ingredient-row .form-input{flex:1}
-  .btn-remove{width:32px;height:32px;border-radius:8px;border:1.5px solid #fecaca;background:#fef2f2;color:#ef4444;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-  .btn-remove:hover{background:#ef4444;color:#fff}
-  .btn-add{padding:8px 16px;border-radius:8px;border:1.5px dashed var(--primary-light);background:transparent;color:var(--primary);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
-  .btn-add:hover{background:rgba(15,118,110,.05);border-color:var(--primary)}
-
-  .result-section{margin-top:24px;padding-top:24px;border-top:1px solid var(--border)}
-  .improvement-card{padding:18px 20px;background:linear-gradient(135deg,#f0fdfa,#ecfdf5);border-radius:var(--radius-sm);border-left:4px solid var(--primary-light);margin-bottom:14px;transition:all .2s}
-  .improvement-card:hover{transform:translateX(4px);box-shadow:0 2px 12px rgba(15,118,110,.1)}
-  .improvement-title{font-size:15px;font-weight:700;color:var(--primary-dark);margin-bottom:8px}
-  .improvement-desc{font-size:13px;color:var(--text-light);line-height:1.7}
-  .summary-box{padding:20px 24px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:var(--radius-sm);margin-top:20px;border:1px solid #fcd34d}
-  .summary-title{font-size:14px;font-weight:700;color:#92400e;margin-bottom:8px}
-  .summary-text{font-size:13px;color:#78350f;line-height:1.7}
-
-  .loading{text-align:center;padding:40px;color:var(--text-light);font-size:14px}
-  .spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .empty-state{text-align:center;padding:48px 20px;color:var(--text-light)}
-  .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
-  .empty-text{font-size:14px}
-
-  @media(max-width:900px){
-    .main-grid{grid-template-columns:1fr}
-    .navbar{padding:0 16px;height:64px}
-    .container{padding:20px 16px}
-    .nav-subtitle{display:none}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品研发 - 海青水产</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Noto Sans SC', sans-serif; }
+        .ocean-gradient { background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%); }
+        .card-shadow { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        .btn-primary { background: linear-gradient(135deg, #0ea5e9, #0284c7); transition: all 0.3s; }
+        .btn-primary:hover { background: linear-gradient(135deg, #38bdf8, #0ea5e9); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(14,165,233,0.4); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-danger:hover { background: linear-gradient(135deg, #f87171, #ef4444); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-success:hover { background: linear-gradient(135deg, #34d399, #10b981); }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-warning:hover { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .tab-active { background: white; color: #0c4a6e; font-weight: 600; }
+        .tab-inactive { color: rgba(255,255,255,0.7); }
+        .tab-inactive:hover { color: white; background: rgba(255,255,255,0.1); }
+        .product-item { transition: all 0.2s; }
+        .product-item:hover { background: #f0f9ff; }
+        .improvement-card { border-left: 3px solid #0ea5e9; }
+        .slide-in { animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<nav class="navbar">
-  <div class="nav-brand">
-    <div class="nav-logo">🐟</div>
-    <div>
-      <div class="nav-title">海青菜品研发工作台</div>
-      <div class="nav-subtitle">大连海青水产有限公司 · 深海鱼加工及预制菜品研发</div>
+<!-- 顶部导航 -->
+<nav class="ocean-gradient text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">🐟</div>
+            <div>
+                <h1 class="text-lg font-bold leading-tight">菜品应用研发工作台</h1>
+                <p class="text-xs text-sky-200">大连海青水产 · 深海鱼加工及预制菜品研发</p>
+            </div>
+        </div>
+        <div class="flex gap-1 bg-white/10 rounded-xl p-1">
+            <a href="index.html" class="tab-inactive px-4 py-2 rounded-lg text-sm">菜品研发</a>
+            <a href="product.html" class="tab-active px-4 py-2 rounded-lg text-sm">产品研发</a>
+        </div>
     </div>
-  </div>
-  <div class="nav-tabs">
-    <a class="nav-tab" href="/">菜品研发</a>
-    <a class="nav-tab active" href="/product.html">产品研发</a>
-  </div>
 </nav>
 
-<div class="container">
-  <div class="main-grid">
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- 左：配方输入 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon product">🧪</div>
-          <div class="card-title">AI配方分析</div>
+        <!-- 左侧：已保存产品列表 -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-box text-sky-500"></i>
+                        <h2 class="font-semibold text-gray-800">产品列表</h2>
+                        <span id="productCount" class="text-xs bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <button onclick="showProductForm()" class="btn-primary text-white text-xs px-3 py-1.5 rounded-lg">
+                        <i class="fas fa-plus mr-1"></i>新建
+                    </button>
+                </div>
+                <div id="productList" class="divide-y divide-gray-50 max-h-[calc(100vh-200px)] overflow-y-auto">
+                    <div class="text-center text-gray-400 py-8">暂无产品</div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="card-body">
-        <form id="productForm" onsubmit="analyzeProduct(event)">
-          <div class="form-group">
-            <label class="form-label">菜品/配方名称<span class="required">*</span></label>
-            <input class="form-input" id="recipeName" placeholder="例如：香煎鳕鱼" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">烹饪方式</label>
-            <select class="form-select" id="cookingMethod">
-              <option value="煎">煎</option>
-              <option value="蒸">蒸</option>
-              <option value="煮">煮</option>
-              <option value="烤">烤</option>
-              <option value="炸">炸</option>
-              <option value="炖">炖</option>
-              <option value="炒">炒</option>
-              <option value="拌">拌</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">原料配方</label>
-            <div class="ingredient-list" id="ingredientList">
-              <div class="ingredient-row">
-                <input class="form-input" placeholder="例如：鳕鱼 200g">
-                <button type="button" class="btn-remove" onclick="removeIngredient(this)">×</button>
-              </div>
+
+        <!-- 右侧：产品录入/编辑 -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- 表单 -->
+            <div id="productFormPanel" class="bg-white rounded-2xl card-shadow overflow-hidden slide-in">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-flask text-sky-500"></i>
+                        <h2 class="font-semibold text-gray-800" id="formTitle">新建产品</h2>
+                    </div>
+                    <div id="formActions" class="flex gap-2">
+                        <button onclick="saveProduct()" class="btn-success text-white text-xs px-3 py-1.5 rounded-lg"><i class="fas fa-save mr-1"></i>保存</button>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <input type="hidden" id="editProductId" value="">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">产品名称 <span class="text-red-500">*</span></label>
+                            <input type="text" id="productName" placeholder="例如：香煎鳕鱼预制菜" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">配方名称</label>
+                            <input type="text" id="recipeName" placeholder="关联配方名称" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">烹饪工艺</label>
+                            <input type="text" id="cookingMethod" placeholder="例如：真空低温慢煮" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                            <select id="productStatus" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                                <option value="draft">草稿</option>
+                                <option value="testing">测试中</option>
+                                <option value="published">已发布</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 原料列表 -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">原料配方</label>
+                        <div id="ingredientsList" class="space-y-2"></div>
+                        <button onclick="addIngredient()" class="mt-2 text-sm text-sky-600 hover:text-sky-700"><i class="fas fa-plus mr-1"></i>添加原料</button>
+                    </div>
+                    <!-- 实验室数据 -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">实验室数据</label>
+                        <textarea id="labData" rows="3" placeholder="记录实验参数、检测结果等..." class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm"></textarea>
+                    </div>
+                    <!-- 操作按钮 -->
+                    <div class="mt-5 flex gap-3 flex-wrap">
+                        <button onclick="analyzeProduct()" id="analyzeBtn" class="btn-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium">
+                            <i class="fas fa-brain mr-2"></i>AI分析优化建议
+                        </button>
+                    </div>
+                    <!-- AI分析结果 -->
+                    <div id="analyzeResult" class="mt-6 hidden fade-in">
+                        <div class="border-t border-gray-100 pt-5">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3"><i class="fas fa-lightbulb text-amber-400 mr-1"></i>AI优化建议</h4>
+                            <div id="improvementsList" class="space-y-3"></div>
+                            <div id="summaryBox" class="mt-4 bg-sky-50 rounded-xl p-4 text-sm text-gray-700"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="button" class="btn-add" onclick="addIngredient()" style="margin-top:8px">+ 添加原料</button>
-          </div>
-          <div class="form-group">
-            <label class="form-label">实验室数据</label>
-            <textarea class="form-textarea" id="labData" placeholder="例如：蛋白质含量18.5g/100g，脂肪含量3.2g/100g"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">上传参考文档</label>
-            <div class="file-upload" onclick="document.getElementById('docFile').click()">
-              <div class="file-upload-icon">📄</div>
-              <div class="file-upload-text">点击上传参考文档（PDF/Word/Excel）</div>
-              <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">上传产品照片</label>
-            <div class="file-upload" onclick="document.getElementById('photoFiles').click()">
-              <div class="file-upload-icon">📷</div>
-              <div class="file-upload-text">点击上传产品照片（支持多张）</div>
-              <input type="file" id="photoFiles" accept="image/*" multiple>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-accent" style="width:100%;justify-content:center;padding:13px;font-size:15px">
-            🔬 AI配方分析与优化
-          </button>
-        </form>
-      </div>
+        </div>
     </div>
-
-    <!-- 右：分析结果 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon product">📋</div>
-          <div class="card-title">分析结果</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="analysisResult">
-          <div class="empty-state">
-            <div class="empty-icon">🧪</div>
-            <div class="empty-text">填写左侧配方信息后，点击「AI配方分析与优化」</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 <script>
 const API_BASE = "https://haiqing-dish-rnd-production.up.railway.app";
+let ingredientCount = 0;
+let currentImprovements = [];
+let currentSummary = '';
 
-function addIngredient() {
-  const list = document.getElementById('ingredientList');
-  const row = document.createElement('div');
-  row.className = 'ingredient-row';
-  row.innerHTML = '<input class="form-input" placeholder="例如：黄油 20g"><button type="button" class="btn-remove" onclick="removeIngredient(this)">×</button>';
-  list.appendChild(row);
+// ========== 原料管理 ==========
+function addIngredient(name = '', weight = '') {
+    ingredientCount++;
+    const id = ingredientCount;
+    const container = document.getElementById('ingredientsList');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.id = `ing${id}`;
+    div.innerHTML = `
+        <input type="text" placeholder="原料名称" value="${name}" class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm ing-name">
+        <input type="text" placeholder="克重" value="${weight}" class="w-24 border border-gray-200 rounded-xl px-3 py-2 text-sm ing-weight">
+        <button onclick="document.getElementById('ing${id}').remove()" class="text-red-400 hover:text-red-600 text-sm px-2"><i class="fas fa-times-circle"></i></button>
+    `;
+    container.appendChild(div);
 }
 
-function removeIngredient(btn) {
-  const list = document.getElementById('ingredientList');
-  if (list.children.length > 1) btn.parentElement.remove();
-}
-
-async function analyzeProduct(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
-  const resultDiv = document.getElementById('analysisResult');
-  btn.disabled = true;
-  btn.textContent = '⏳ 分析中...';
-  resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><br>AI正在分析配方，请稍候...</div>';
-
-  const recipeName = document.getElementById('recipeName').value;
-  const cookingMethod = document.getElementById('cookingMethod').value;
-  const labData = document.getElementById('labData').value;
-
-  const ingredientInputs = document.querySelectorAll('#ingredientList .form-input');
-  const ingredients = Array.from(ingredientInputs).map(i => i.value).filter(v => v.trim());
-
-  const formData = new FormData();
-  formData.append('recipe_name', recipeName);
-  formData.append('cooking_method', cookingMethod);
-  formData.append('lab_data', labData);
-  formData.append('ingredients', JSON.stringify(ingredients));
-
-  const docFile = document.getElementById('docFile').files[0];
-  if (docFile) formData.append('document', docFile);
-
-  const photoFiles = document.getElementById('photoFiles').files;
-  for (let i = 0; i < photoFiles.length; i++) {
-    formData.append('photos', photoFiles[i]);
-  }
-
-  try {
-    const resp = await fetch(`${API_BASE}/api/web/product/analyze`, {
-      method: 'POST',
-      body: formData
+function getIngredients() {
+    const items = [];
+    document.querySelectorAll('#ingredientsList > div').forEach(div => {
+        const n = div.querySelector('.ing-name')?.value?.trim();
+        const w = div.querySelector('.ing-weight')?.value?.trim();
+        if (n) items.push({ name: n, weight: w || '50' });
     });
-    const data = await resp.json();
-
-    if (data.success) {
-      let html = '<div class="result-section">';
-      if (data.improvements && data.improvements.length > 0) {
-        data.improvements.forEach(imp => {
-          html += `<div class="improvement-card">
-            <div class="improvement-title">💡 ${imp.title}</div>
-            <div class="improvement-desc">${imp.description}</div>
-          </div>`;
-        });
-      }
-      if (data.summary) {
-        html += `<div class="summary-box">
-          <div class="summary-title">📝 总结</div>
-          <div class="summary-text">${data.summary}</div>
-        </div>`;
-      }
-      html += '</div>';
-      resultDiv.innerHTML = html;
-    } else {
-      resultDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">分析失败，请重试</div></div>';
-    }
-  } catch (err) {
-    resultDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">网络错误，请重试</div></div>';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🔬 AI配方分析与优化';
-  }
+    return items;
 }
+
+// ========== 产品列表 ==========
+async function loadProducts() {
+    const list = document.getElementById('productList');
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/products`);
+        const data = await resp.json();
+        if (data.success && data.products && data.products.length > 0) {
+            document.getElementById('productCount').textContent = data.products.length;
+            list.innerHTML = data.products.map(p => {
+                const statusLabel = p.status === 'draft' ? '草稿' : p.status === 'testing' ? '测试中' : '已发布';
+                const statusColor = p.status === 'draft' ? 'bg-gray-100 text-gray-600' : p.status === 'testing' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600';
+                return `
+                <div class="product-item px-5 py-4 cursor-pointer" onclick="editProduct(${p.id})">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-semibold text-gray-800 text-sm">${p.name}</div>
+                            <div class="text-xs text-gray-500 mt-0.5">${p.recipe_name || '未关联配方'}</div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="text-xs px-2 py-0.5 rounded-full ${statusColor}">${statusLabel}</span>
+                            <button onclick="event.stopPropagation(); deleteProduct(${p.id})" class="text-red-400 hover:text-red-600 text-sm"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            document.getElementById('productCount').textContent = '0';
+            list.innerHTML = '<div class="text-center text-gray-400 py-8"><i class="fas fa-box-open text-3xl mb-2"></i><p class="text-sm">暂无产品，点击"新建"开始</p></div>';
+        }
+    } catch (e) {
+        list.innerHTML = '<div class="text-center text-red-400 py-8">加载失败</div>';
+    }
+}
+
+// ========== 表单 ==========
+function showProductForm(product = null) {
+    document.getElementById('analyzeResult').classList.add('hidden');
+    if (product) {
+        document.getElementById('formTitle').textContent = '编辑产品';
+        document.getElementById('editProductId').value = product.id;
+        document.getElementById('productName').value = product.name || '';
+        document.getElementById('recipeName').value = product.recipe_name || '';
+        document.getElementById('cookingMethod').value = product.cooking_method || '';
+        document.getElementById('labData').value = product.lab_data || '';
+        document.getElementById('productStatus').value = product.status || 'draft';
+        const ings = typeof product.ingredients === 'string' ? JSON.parse(product.ingredients || '[]') : (product.ingredients || []);
+        document.getElementById('ingredientsList').innerHTML = '';
+        ingredientCount = 0;
+        ings.forEach(ing => {
+            const n = typeof ing === 'string' ? ing : (ing.name || '');
+            const w = typeof ing === 'object' ? (ing.weight || '') : '';
+            addIngredient(n, w);
+        });
+        const imps = typeof product.improvements === 'string' ? JSON.parse(product.improvements || '[]') : (product.improvements || []);
+        currentImprovements = imps;
+        currentSummary = product.summary || '';
+        if (imps.length || product.summary) {
+            showAnalyzeResult(imps, product.summary);
+        }
+    } else {
+        document.getElementById('formTitle').textContent = '新建产品';
+        document.getElementById('editProductId').value = '';
+        document.getElementById('productName').value = '';
+        document.getElementById('recipeName').value = '';
+        document.getElementById('cookingMethod').value = '';
+        document.getElementById('labData').value = '';
+        document.getElementById('productStatus').value = 'draft';
+        document.getElementById('ingredientsList').innerHTML = '';
+        ingredientCount = 0;
+        currentImprovements = [];
+        currentSummary = '';
+    }
+    addIngredient();
+}
+
+// ========== AI分析 ==========
+async function analyzeProduct() {
+    const rn = document.getElementById('recipeName').value.trim();
+    const cm = document.getElementById('cookingMethod').value.trim();
+    const ld = document.getElementById('labData').value.trim();
+    const ings = getIngredients();
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>分析中...';
+
+    try {
+        const formData = new FormData();
+        formData.append('recipe_name', rn);
+        formData.append('cooking_method', cm);
+        formData.append('lab_data', ld);
+        formData.append('ingredients', JSON.stringify(ings));
+        const resp = await fetch(`${API_BASE}/api/web/product/analyze`, { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (data.success) {
+            currentImprovements = data.improvements || [];
+            currentSummary = data.summary || '';
+            showAnalyzeResult(data.improvements, data.summary);
+        } else {
+            alert('分析失败');
+        }
+    } catch (e) {
+        alert('网络错误，请重试');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-brain mr-2"></i>AI分析优化建议';
+    }
+}
+
+function showAnalyzeResult(improvements, summary) {
+    document.getElementById('analyzeResult').classList.remove('hidden');
+    const list = document.getElementById('improvementsList');
+    if (improvements && improvements.length) {
+        list.innerHTML = improvements.map(imp => `
+            <div class="improvement-card bg-gray-50 rounded-xl p-4">
+                <div class="font-semibold text-gray-800 text-sm mb-1"><i class="fas fa-arrow-right text-sky-500 mr-2"></i>${imp.title}</div>
+                <div class="text-sm text-gray-600 leading-relaxed">${imp.description}</div>
+            </div>
+        `).join('');
+    }
+    const sBox = document.getElementById('summaryBox');
+    if (summary) {
+        sBox.innerHTML = `<div class="flex items-start gap-2"><i class="fas fa-clipboard-check text-sky-500 mt-0.5"></i><span>${summary}</span></div>`;
+    }
+}
+
+// ========== 保存产品 ==========
+async function saveProduct() {
+    const name = document.getElementById('productName').value.trim();
+    if (!name) { alert('请填写产品名称'); return; }
+
+    const productData = {
+        name: name,
+        recipe_name: document.getElementById('recipeName').value.trim(),
+        cooking_method: document.getElementById('cookingMethod').value.trim(),
+        ingredients: getIngredients(),
+        lab_data: document.getElementById('labData').value.trim(),
+        improvements: currentImprovements,
+        summary: currentSummary,
+        status: document.getElementById('productStatus').value
+    };
+
+    try {
+        const editId = document.getElementById('editProductId').value;
+        let resp;
+        if (editId) {
+            resp = await fetch(`${API_BASE}/api/web/products/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(productData)
+            });
+        } else {
+            resp = await fetch(`${API_BASE}/api/web/products`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(productData)
+            });
+        }
+        const data = await resp.json();
+        if (data.success) {
+            alert('保存成功！');
+            await loadProducts();
+        } else {
+            alert('保存失败：' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('网络错误，请重试');
+    }
+}
+
+// ========== 编辑产品 ==========
+async function editProduct(id) {
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/products/${id}`);
+        const data = await resp.json();
+        if (data.success && data.product) {
+            showProductForm(data.product);
+        }
+    } catch (e) { alert('网络错误'); }
+}
+
+// ========== 删除产品 ==========
+async function deleteProduct(id) {
+    if (!confirm('确定要删除这个产品吗？')) return;
+    try {
+        const resp = await fetch(`${API_BASE}/api/web/products/${id}`, { method: 'DELETE' });
+        const data = await resp.json();
+        if (data.success) { await loadProducts(); }
+        else { alert('删除失败'); }
+    } catch (e) { alert('网络错误'); }
+}
+
+// ========== 初始化 ==========
+document.addEventListener('DOMContentLoaded', () => {
+    loadProducts();
+    addIngredient();
+});
 </script>
 </body>
 </html>
