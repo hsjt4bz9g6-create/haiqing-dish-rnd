@@ -625,6 +625,49 @@ async def health():
     return {"status": "healthy", "service": "haiqing-dish-rnd-backend", "port": PORT, "db_connected": db_pool is not None}
 
 
+@app.get("/debug/db")
+async def debug_db():
+    """调试数据库连接"""
+    url_set = bool(DATABASE_URL)
+    url_prefix = DATABASE_URL[:50] + "..." if DATABASE_URL else "NOT SET"
+    try:
+        global db_pool
+        if db_pool:
+            async with db_pool.acquire() as conn:
+                val = await conn.fetchval("SELECT 1")
+            return {"db_pool_exists": True, "select_1": val, "url_set": url_set, "url_prefix": url_prefix}
+        
+        # 尝试实时连接
+        if not DATABASE_URL:
+            return {"db_pool_exists": False, "url_set": False, "url_prefix": "NOT SET", "error": "PGDATABASE_URL not set"}
+        
+        clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
+        
+        # 尝试SSL
+        try:
+            ssl_ctx = ssl_module.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = ssl_module.CERT_NONE
+            pool = await asyncpg.create_pool(clean_url, min_size=1, max_size=2, ssl=ssl_ctx)
+            async with pool.acquire() as conn:
+                val = await conn.fetchval("SELECT 1")
+            db_pool = pool
+            return {"db_pool_exists": True, "select_1": val, "url_set": url_set, "method": "ssl", "url_prefix": url_prefix}
+        except Exception as e1:
+            # 尝试无SSL
+            try:
+                pool = await asyncpg.create_pool(clean_url, min_size=1, max_size=2)
+                async with pool.acquire() as conn:
+                    val = await conn.fetchval("SELECT 1")
+                db_pool = pool
+                return {"db_pool_exists": True, "select_1": val, "url_set": url_set, "method": "no_ssl", "url_prefix": url_prefix}
+            except Exception as e2:
+                return {"db_pool_exists": False, "url_set": url_set, "url_prefix": url_prefix, 
+                        "ssl_error": f"{type(e1).__name__}: {e1}", "no_ssl_error": f"{type(e2).__name__}: {e2}"}
+    except Exception as e:
+        return {"db_pool_exists": False, "url_set": url_set, "url_prefix": url_prefix, "error": f"{type(e).__name__}: {e}"}
+
+
 if __name__ == "__main__":
     import uvicorn
     logger.info(f"Starting server on port {PORT}")
