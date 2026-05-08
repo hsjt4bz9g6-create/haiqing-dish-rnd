@@ -38,14 +38,28 @@ async def startup():
         try:
             # 移除asyncpg不支持的参数
             clean_url = DATABASE_URL.replace("channel_binding=require", "").replace("?&", "?").rstrip("&?")
+            logger.info(f"尝试连接数据库, URL前缀: {clean_url[:30]}...")
             # 添加ssl参数支持
             ssl_ctx = ssl_module.create_default_context()
             ssl_ctx.check_hostname = False
             ssl_ctx.verify_mode = ssl_module.CERT_NONE
             db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10, ssl=ssl_ctx)
+            # 验证连接
+            async with db_pool.acquire() as conn:
+                val = await conn.fetchval("SELECT 1")
+                logger.info(f"数据库连接验证成功, SELECT 1 = {val}")
             logger.info("数据库连接池创建成功")
         except Exception as e:
-            logger.error(f"数据库连接失败: {e}")
+            logger.error(f"数据库连接失败: {type(e).__name__}: {e}")
+            # 尝试不带SSL连接
+            try:
+                logger.info("尝试不带SSL连接...")
+                db_pool = await asyncpg.create_pool(clean_url, min_size=2, max_size=10)
+                async with db_pool.acquire() as conn:
+                    val = await conn.fetchval("SELECT 1")
+                    logger.info(f"无SSL连接成功, SELECT 1 = {val}")
+            except Exception as e2:
+                logger.error(f"无SSL连接也失败: {type(e2).__name__}: {e2}")
 
 @app.on_event("shutdown")
 async def shutdown():
