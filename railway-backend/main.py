@@ -630,8 +630,8 @@ async def debug_db():
     """调试数据库连接"""
     url_set = bool(DATABASE_URL)
     url_prefix = DATABASE_URL[:50] + "..." if DATABASE_URL else "NOT SET"
-    all_env_keys = [k for k in os.environ.keys() if "PG" in k or "DATABASE" in k or "DB" in k or "SUPA" in k or "PORT" in k]
-    env_vals = {k: os.environ.get(k, "")[:30] for k in all_env_keys}
+    all_env_keys = sorted(os.environ.keys())
+    env_vals = {k: os.environ.get(k, "")[:40] for k in all_env_keys}
     
     try:
         global db_pool
