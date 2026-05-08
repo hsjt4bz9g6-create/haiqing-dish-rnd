@@ -1,6 +1,6 @@
 # 海青菜品研发API - Railway部署
-# 简化版 - 仅依赖FastAPI
 
+import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +10,9 @@ from typing import List, Optional
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Railway会设置PORT环境变量
+PORT = int(os.environ.get("PORT", 8000))
 
 # 初始化FastAPI
 app = FastAPI(title="海青菜品研发API")
@@ -100,9 +103,10 @@ async def root():
 @app.get("/health")
 async def health():
     """健康检查"""
-    return {"status": "healthy", "service": "haiqing-dish-rnd-backend"}
+    return {"status": "healthy", "service": "haiqing-dish-rnd-backend", "port": PORT}
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    logger.info(f"Starting server on port {PORT}")
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
